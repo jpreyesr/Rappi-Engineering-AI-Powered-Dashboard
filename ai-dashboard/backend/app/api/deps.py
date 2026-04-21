@@ -5,6 +5,7 @@ from app.db.duckdb_client import DuckDBClient
 from app.repositories.analytics_repository import AnalyticsRepository
 from app.services.analytics_service import AnalyticsService
 from app.services.chat_service import ChatService
+from app.services.ingestion_service import IngestionService
 
 
 @lru_cache
@@ -26,3 +27,8 @@ def get_analytics_service() -> AnalyticsService:
 @lru_cache
 def get_chat_service() -> ChatService:
     return ChatService(get_analytics_service(), get_settings())
+
+
+@lru_cache
+def get_ingestion_service() -> IngestionService:
+    return IngestionService(get_duckdb_client())

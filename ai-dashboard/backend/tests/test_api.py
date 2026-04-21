@@ -15,6 +15,29 @@ def test_healthcheck_connects_to_duckdb() -> None:
     assert payload["duckdb_connected"] is True
 
 
+def test_data_status_returns_current_load_state() -> None:
+    response = client.get("/api/data/status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] in {"loaded", "not_loaded"}
+    if payload["status"] == "loaded":
+        assert payload["points_loaded"] > 0
+        assert "availability_points" in payload["tables_created"]
+
+
+def test_data_load_rebuilds_availability_tables() -> None:
+    response = client.post("/api/data/load")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "loaded"
+    assert payload["files_loaded"] > 0
+    assert payload["points_loaded"] > 0
+    assert "availability_points" in payload["tables_created"]
+    assert "availability_enriched" in payload["tables_created"]
+
+
 def test_summary_returns_dataset_kpis() -> None:
     response = client.get("/analytics/summary")
 
