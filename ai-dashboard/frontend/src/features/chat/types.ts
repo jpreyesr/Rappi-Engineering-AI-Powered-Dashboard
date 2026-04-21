@@ -1,1 +1,1 @@
-export type { ChatMessage, ChatResponse } from "../../types/api";
+export type { ChatMessage, ChatRequest, ChatResponse, ChatSuggestionsResponse } from "../../types/api";

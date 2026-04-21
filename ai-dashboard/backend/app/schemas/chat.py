@@ -1,3 +1,5 @@
+from app.schemas.filters import AnalyticsFilters
+
 from pydantic import BaseModel, Field
 
 
@@ -8,6 +10,7 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
+    filters: AnalyticsFilters | None = None
     history: list[ChatMessage] = Field(default_factory=list, max_length=12)
 
 
@@ -20,3 +23,7 @@ class ChatResponse(BaseModel):
     answer: str
     used_ai: bool
     tool_calls: list[ToolCallTrace] = Field(default_factory=list)
+
+
+class ChatSuggestionsResponse(BaseModel):
+    suggestions: list[str]

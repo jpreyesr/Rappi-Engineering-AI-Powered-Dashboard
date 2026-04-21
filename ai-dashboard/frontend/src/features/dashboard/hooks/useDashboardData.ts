@@ -160,6 +160,7 @@ export function useDashboardData() {
   return {
     options,
     filters,
+    analyticsFilters,
     tableState,
     kpis,
     trend,

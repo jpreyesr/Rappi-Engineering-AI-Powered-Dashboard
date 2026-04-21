@@ -42,10 +42,20 @@ export type ChatMessage = {
   content: string;
 };
 
+export type ChatRequest = {
+  message: string;
+  filters?: AnalyticsFilters;
+  history?: ChatMessage[];
+};
+
 export type ChatResponse = {
   answer: string;
   used_ai: boolean;
   tool_calls: Array<{ name: string; arguments: Record<string, unknown> }>;
+};
+
+export type ChatSuggestionsResponse = {
+  suggestions: string[];
 };
 
 export type Granularity = "raw" | "hour" | "day";

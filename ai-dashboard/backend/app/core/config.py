@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     duckdb_path: Path = Field(default=Path("data/processed/dashboard.duckdb"))
     openai_api_key: str | None = None
     openai_model: str = "gpt-4.1-mini"
+    model_name: str | None = None
     cors_origins: list[str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
@@ -31,6 +32,10 @@ class Settings(BaseSettings):
         if self.duckdb_path.is_absolute():
             return self.duckdb_path
         return DASHBOARD_ROOT / self.duckdb_path
+
+    @property
+    def resolved_model_name(self) -> str:
+        return self.model_name or self.openai_model
 
 
 @lru_cache

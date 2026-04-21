@@ -1,3 +1,4 @@
+import { ChatPanel } from "../features/chat/components/ChatPanel";
 import { DashboardHeader } from "../features/dashboard/components/DashboardHeader";
 import { DistributionChart } from "../features/dashboard/components/DistributionChart";
 import { ErrorBanner } from "../features/dashboard/components/StateBlocks";
@@ -40,6 +41,8 @@ export function DashboardPage() {
             onSortChange={dashboard.setTableSort}
           />
         </section>
+
+        <ChatPanel filters={dashboard.analyticsFilters} />
       </div>
     </main>
   );
