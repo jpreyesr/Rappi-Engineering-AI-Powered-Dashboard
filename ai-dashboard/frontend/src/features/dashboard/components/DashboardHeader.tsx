@@ -1,0 +1,35 @@
+import { Database, RefreshCw } from "lucide-react";
+
+import { formatDateTime, formatNumber } from "../../../lib/formatters";
+import type { AnalyticsKpisResponse, FilterOptionsResponse } from "../types";
+
+type DashboardHeaderProps = {
+  options: FilterOptionsResponse | null;
+  kpis: AnalyticsKpisResponse | null;
+  isLoading: boolean;
+};
+
+export function DashboardHeader({ options, kpis, isLoading }: DashboardHeaderProps) {
+  return (
+    <header className="flex flex-col gap-4 border-b border-neutral-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <div>
+        <p className="text-sm font-medium text-emerald-700">Backend-owned analytics</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-normal text-neutral-950">AI-Powered Dashboard</h1>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-600">
+          Store availability monitoring with FastAPI, DuckDB, and reusable analytics endpoints for dashboard and future
+          chatbot workflows.
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700">
+          <Database className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+          {kpis ? `${formatNumber(kpis.points_count)} points` : "Dataset loading"}
+        </div>
+        <div className="flex items-center gap-2 rounded-md border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700">
+          <RefreshCw className={isLoading ? "h-4 w-4 animate-spin text-blue-700" : "h-4 w-4 text-blue-700"} />
+          {formatDateTime(options?.min_timestamp ?? null)} - {formatDateTime(options?.max_timestamp ?? null)}
+        </div>
+      </div>
+    </header>
+  );
+}

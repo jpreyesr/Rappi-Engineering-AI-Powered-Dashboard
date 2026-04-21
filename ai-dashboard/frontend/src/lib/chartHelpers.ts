@@ -5,6 +5,7 @@ export type AvailabilityChartPoint = {
   timestamp: string;
   label: string;
   visibleStores: number;
+  deltaVisibleStores: number | null;
 };
 
 export function toAvailabilityChartData(points: TimeSeriesPoint[]): AvailabilityChartPoint[] {
@@ -12,5 +13,6 @@ export function toAvailabilityChartData(points: TimeSeriesPoint[]): Availability
     timestamp: point.timestamp,
     label: formatDateTime(point.timestamp),
     visibleStores: point.visible_stores,
+    deltaVisibleStores: point.delta_visible_stores ?? null,
   }));
 }

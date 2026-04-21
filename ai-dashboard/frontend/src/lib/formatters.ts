@@ -34,3 +34,17 @@ export function formatDateTime(value: string | null): string {
   }
   return dateTimeFormatter.format(new Date(value));
 }
+
+export function formatDateInput(value: string | null): string {
+  if (!value) {
+    return "";
+  }
+  return value.slice(0, 10);
+}
+
+export function formatPercent(value: number | null): string {
+  if (value === null || value === undefined) {
+    return "-";
+  }
+  return `${value.toFixed(1)}%`;
+}
