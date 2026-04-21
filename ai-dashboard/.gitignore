@@ -19,6 +19,7 @@ pip-wheel-metadata/
 .ruff_cache/
 .coverage
 htmlcov/
+*.tsbuildinfo
 
 # Backend local artifacts
 *.db
@@ -41,6 +42,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 # Package manager caches
+.npm-cache/
 .npm/
 .pnpm-store/
 .yarn/
