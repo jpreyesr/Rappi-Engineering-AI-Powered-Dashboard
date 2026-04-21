@@ -40,7 +40,7 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
       <div className="flex flex-col gap-2 border-b border-neutral-200 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-neutral-950">Source Windows Table</h2>
-          <p className="mt-1 text-sm text-neutral-500">Paginated backend rows. Source files stand in for stores.</p>
+          <p className="mt-1 text-sm text-neutral-500">Paginated backend rows by source window.</p>
         </div>
         <p className="text-sm text-neutral-500">{formatNumber(total)} rows</p>
       </div>

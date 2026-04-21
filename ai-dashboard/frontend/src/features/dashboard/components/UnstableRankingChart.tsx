@@ -33,7 +33,7 @@ export function UnstableRankingChart({ unstable, isLoading }: UnstableRankingCha
             <AlertTriangle className="h-5 w-5 text-amber-700" aria-hidden="true" />
             <h2 className="text-lg font-semibold text-neutral-950">Most Unstable Sources</h2>
           </div>
-          <p className="mt-1 text-sm text-neutral-500">Ranked by backend volatility. Source files stand in for stores.</p>
+          <p className="mt-1 text-sm text-neutral-500">Ranked by backend volatility across source windows.</p>
         </div>
       </div>
 
