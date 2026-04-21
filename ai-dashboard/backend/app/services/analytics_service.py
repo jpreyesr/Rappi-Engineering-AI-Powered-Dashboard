@@ -1,10 +1,19 @@
 from app.repositories.analytics_repository import AnalyticsRepository
 from app.schemas.analytics import (
+    AnalyticsKpisResponse,
     AvailabilitySummary,
+    AvailabilityTrendResponse,
     DatasetMetadata,
+    DistributionBucket,
+    DistributionResponse,
+    FilterOptionsResponse,
     Kpi,
+    StoresTableResponse,
+    StoresTableRow,
     TimeSeriesPoint,
     TimeSeriesResponse,
+    TopUnstableStoresResponse,
+    UnstableEntity,
 )
 from app.schemas.filters import AnalyticsFilters
 
@@ -13,8 +22,49 @@ class AnalyticsService:
     def __init__(self, repository: AnalyticsRepository) -> None:
         self.repository = repository
 
+    def get_filter_options(self) -> FilterOptionsResponse:
+        options = self.repository.filter_options()
+        return FilterOptionsResponse(
+            min_timestamp=options["min_timestamp"],
+            max_timestamp=options["max_timestamp"],
+            metrics=options["metrics"],
+            source_files=options["source_files"],
+            granularities=["raw", "hour", "day"],
+        )
+
+    def get_kpis(self, filters: AnalyticsFilters | None = None) -> AnalyticsKpisResponse:
+        filters = self._normalize_filters(filters)
+        stats = self.repository.kpis(filters)
+        return AnalyticsKpisResponse(**stats)
+
+    def get_availability_trend(self, filters: AnalyticsFilters | None = None) -> AvailabilityTrendResponse:
+        filters = self._normalize_filters(filters, default_limit=500)
+        points = [TimeSeriesPoint(**point) for point in self.repository.availability_trend(filters)]
+        return AvailabilityTrendResponse(granularity=filters.granularity, points=points)
+
+    def get_top_unstable_stores(self, filters: AnalyticsFilters | None = None) -> TopUnstableStoresResponse:
+        filters = self._normalize_filters(filters, default_limit=10)
+        items = [UnstableEntity(**item) for item in self.repository.top_unstable_sources(filters)]
+        return TopUnstableStoresResponse(items=items)
+
+    def get_distribution(self, filters: AnalyticsFilters | None = None) -> DistributionResponse:
+        filters = self._normalize_filters(filters)
+        result = self.repository.distribution(filters)
+        buckets = [DistributionBucket(**bucket) for bucket in result["buckets"]]
+        return DistributionResponse(
+            bucket_count=filters.bucket_count,
+            total_count=result["total_count"],
+            buckets=buckets,
+        )
+
+    def get_stores_table(self, filters: AnalyticsFilters | None = None) -> StoresTableResponse:
+        filters = self._normalize_filters(filters, default_limit=50)
+        result = self.repository.stores_table(filters)
+        rows = [StoresTableRow(**row) for row in result["rows"]]
+        return StoresTableResponse(total=result["total"], limit=filters.limit, offset=filters.offset, rows=rows)
+
     def get_summary(self, filters: AnalyticsFilters | None = None) -> AvailabilitySummary:
-        filters = filters or AnalyticsFilters()
+        filters = self._normalize_filters(filters)
         metadata = DatasetMetadata(**self.repository.load_metadata())
         stats = self.repository.summary_stats(filters)
 
@@ -46,24 +96,52 @@ class AnalyticsService:
             ),
         ]
 
-        return AvailabilitySummary(metadata=metadata, kpis=kpis, **stats)
+        return AvailabilitySummary(
+            metadata=metadata,
+            kpis=kpis,
+            latest_timestamp=stats["latest_timestamp"],
+            current_visible_stores=stats["current_visible_stores"],
+            previous_visible_stores=stats["previous_visible_stores"],
+            delta_visible_stores=stats["delta_visible_stores"],
+            average_visible_stores=stats["average_visible_stores"],
+            min_visible_stores=stats["min_visible_stores"],
+            max_visible_stores=stats["max_visible_stores"],
+        )
 
     def get_timeseries(self, filters: AnalyticsFilters | None = None) -> TimeSeriesResponse:
-        filters = filters or AnalyticsFilters()
-        points = [TimeSeriesPoint(**point) for point in self.repository.timeseries(filters)]
-        return TimeSeriesResponse(granularity=filters.granularity, points=points)
+        trend = self.get_availability_trend(filters)
+        return TimeSeriesResponse(granularity=trend.granularity, points=trend.points)
 
     def compact_context(self) -> dict:
-        summary = self.get_summary()
+        filters = self._normalize_filters(None)
+        kpis = self.get_kpis(filters)
+        metadata = DatasetMetadata(**self.repository.load_metadata())
         return {
-            "current_visible_stores": summary.current_visible_stores,
-            "average_visible_stores": summary.average_visible_stores,
-            "delta_visible_stores": summary.delta_visible_stores,
-            "min_visible_stores": summary.min_visible_stores,
-            "max_visible_stores": summary.max_visible_stores,
-            "latest_timestamp": summary.latest_timestamp.isoformat() if summary.latest_timestamp else None,
-            "files_count": summary.metadata.files_count,
-            "points_count": summary.metadata.points_count,
-            "min_timestamp": summary.metadata.min_timestamp.isoformat() if summary.metadata.min_timestamp else None,
-            "max_timestamp": summary.metadata.max_timestamp.isoformat() if summary.metadata.max_timestamp else None,
+            "current_visible_stores": kpis.current_visible_stores,
+            "average_visible_stores": kpis.average_visible_stores,
+            "delta_visible_stores": kpis.delta_visible_stores,
+            "min_visible_stores": kpis.min_visible_stores,
+            "max_visible_stores": kpis.max_visible_stores,
+            "volatility_visible_stores": kpis.volatility_visible_stores,
+            "points_count": kpis.points_count,
+            "latest_timestamp": kpis.max_timestamp.isoformat() if kpis.max_timestamp else None,
+            "files_count": metadata.files_count,
+            "min_timestamp": metadata.min_timestamp.isoformat() if metadata.min_timestamp else None,
+            "max_timestamp": metadata.max_timestamp.isoformat() if metadata.max_timestamp else None,
         }
+
+    def _normalize_filters(
+        self,
+        filters: AnalyticsFilters | None,
+        default_limit: int | None = None,
+    ) -> AnalyticsFilters:
+        filters = filters or AnalyticsFilters()
+        if default_limit is not None and filters.limit == AnalyticsFilters().limit:
+            filters.limit = default_limit
+        if filters.metric:
+            return filters
+
+        options = self.repository.filter_options()
+        if len(options["metrics"]) == 1:
+            filters.metric = options["metrics"][0]
+        return filters
