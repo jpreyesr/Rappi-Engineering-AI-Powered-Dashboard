@@ -26,9 +26,15 @@ type FilterBarProps = {
 export function FilterBar({ filters, options, isLoading, onChange, onReset }: FilterBarProps) {
   return (
     <section className="surface-panel rounded-lg border p-4">
+      <div className="mb-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-orange-700">Filtros de disponibilidad</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Ajusta el rango de tiempo, la resolución de lectura y los umbrales para analizar el conteo agregado de tiendas visibles.
+        </p>
+      </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Inicio</span>
+          <span className="mb-1 block font-medium text-slate-700">Fecha inicial</span>
           <input
             type="date"
             value={filters.startDate}
@@ -40,7 +46,7 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
           />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Fin</span>
+          <span className="mb-1 block font-medium text-slate-700">Fecha final</span>
           <input
             type="date"
             value={filters.endDate}
@@ -52,7 +58,7 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
           />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Períodos observados</span>
+          <span className="mb-1 block font-medium text-slate-700">Archivos / períodos cargados</span>
           <select
             value={filters.sourceFiles}
             multiple
@@ -68,9 +74,10 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
               </option>
             ))}
           </select>
+          <span className="mt-1 block text-xs text-slate-500">Opcional. Selecciona uno o varios períodos específicos.</span>
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Granularidad</span>
+          <span className="mb-1 block font-medium text-slate-700">Resolución del gráfico</span>
           <select
             value={filters.granularity}
             disabled={isLoading}
@@ -83,9 +90,10 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
               </option>
             ))}
           </select>
+          <span className="mt-1 block text-xs text-slate-500">Agrupa las lecturas de 10 segundos para ver tendencia.</span>
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Hora desde</span>
+          <span className="mb-1 block font-medium text-slate-700">Hora del día desde</span>
           <input
             type="number"
             min={0}
@@ -97,7 +105,7 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
           />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Hora hasta</span>
+          <span className="mb-1 block font-medium text-slate-700">Hora del día hasta</span>
           <input
             type="number"
             min={0}
@@ -109,7 +117,7 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
           />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Umbral mínimo</span>
+          <span className="mb-1 block font-medium text-slate-700">Umbral de baja disponibilidad</span>
           <input
             type="number"
             min={0}
@@ -118,9 +126,10 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
             onChange={(event: { target: { value: string } }) => onChange({ thresholdMin: event.target.value })}
             className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition disabled:bg-slate-100"
           />
+          <span className="mt-1 block text-xs text-slate-500">Ej: 3000000 para medir tiempo por debajo de 3M tiendas.</span>
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Escala Y</span>
+          <span className="mb-1 block font-medium text-slate-700">Escala del eje de tiendas</span>
           <select
             value={filters.yScale}
             disabled={isLoading}
@@ -131,9 +140,10 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
             <option value="linear">Lineal</option>
             <option value="log">Logarítmica</option>
           </select>
+          <span className="mt-1 block text-xs text-slate-500">Logarítmica ayuda cuando hay rangos muy distintos.</span>
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Caída anómala %</span>
+          <span className="mb-1 block font-medium text-slate-700">Sensibilidad de caída</span>
           <input
             type="number"
             min={0}
@@ -143,6 +153,7 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
             onChange={(event: { target: { value: string } }) => onChange({ anomalyDropPct: event.target.value })}
             className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition disabled:bg-slate-100"
           />
+          <span className="mt-1 block text-xs text-slate-500">% mínimo para marcar una caída como anómala.</span>
         </label>
         <label className="flex items-end gap-2 pb-2 text-sm font-medium text-slate-700">
           <input
