@@ -1,0 +1,14 @@
+services:
+  ai-dashboard:
+    build:
+      context: .
+      args:
+        VITE_API_BASE_URL: ""
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      APP_ENV: demo
+      DUCKDB_PATH: data/processed/dashboard.duckdb
+      MODEL_NAME: gemini-2.5-flash
