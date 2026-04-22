@@ -31,8 +31,8 @@ export function PeriodComparisonChart({ comparison, isLoading }: PeriodCompariso
       <div className="mb-4 flex items-center gap-2">
         <GitCompare className="h-5 w-5 text-orange-600" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold text-slate-950">Comparativa de períodos</h2>
-          <p className="mt-1 text-sm text-slate-500">Período actual contra el período inmediatamente anterior.</p>
+          <h2 className="text-lg font-semibold text-slate-950">Comparación de disponibilidad</h2>
+          <p className="mt-1 text-sm text-slate-500">Compara tiendas visibles del período actual contra el anterior.</p>
         </div>
       </div>
 

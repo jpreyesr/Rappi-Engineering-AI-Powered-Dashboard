@@ -32,7 +32,7 @@ export function TrendChart({ trend, isLoading, yScale, recommendedYScale }: Tren
         <div>
           <div className="flex items-center gap-2">
             <LineChart className="h-5 w-5 text-orange-600" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-slate-950">Tiendas visibles en el tiempo</h2>
+            <h2 className="text-lg font-semibold text-slate-950">Disponibilidad de tiendas en el tiempo</h2>
           </div>
           <p className="mt-1 text-sm text-slate-500">
             Agregado por {trend?.granularity ?? "1h"} · escala {effectiveScale === "log" ? "logarítmica" : "lineal"}
@@ -41,13 +41,13 @@ export function TrendChart({ trend, isLoading, yScale, recommendedYScale }: Tren
         <p className="text-sm text-slate-500">
           {chartData.length > 0
             ? `${formatDateTime(chartData[0].timestamp)} - ${formatDateTime(chartData[chartData.length - 1].timestamp)}`
-            : "No range"}
+            : "Sin rango"}
         </p>
       </div>
 
       {isLoading && chartData.length === 0 ? <LoadingBlock className="h-[380px]" /> : null}
       {!isLoading && chartData.length === 0 ? (
-        <EmptyState title="Sin tendencia" description="Amplía el rango o limpia el filtro de ventana." />
+        <EmptyState title="Sin tendencia" description="Amplía el rango o limpia el filtro de período observado." />
       ) : null}
       {chartData.length > 0 ? (
         <div className="h-[380px] w-full">
@@ -65,7 +65,7 @@ export function TrendChart({ trend, isLoading, yScale, recommendedYScale }: Tren
               <Tooltip
                 formatter={(value: unknown, name: unknown) => [
                   formatNumber(Number(value)),
-                  name === "deltaVisibleStores" ? "Delta" : "Visible stores",
+                  name === "deltaVisibleStores" ? "Variación" : "Tiendas visibles",
                 ]}
                 labelClassName="text-sm font-medium text-neutral-700"
               />

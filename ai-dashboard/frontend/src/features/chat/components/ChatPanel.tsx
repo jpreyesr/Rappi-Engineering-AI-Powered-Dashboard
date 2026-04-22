@@ -25,10 +25,10 @@ export function ChatPanel({ filters }: ChatPanelProps) {
         <div>
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-orange-600" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-slate-950">Grounded Analytics Chat</h2>
+            <h2 className="text-lg font-semibold text-slate-950">Chat de disponibilidad de tiendas</h2>
           </div>
           <p className="mt-1 text-sm leading-6 text-slate-500">
-            Answers run through backend tools and use the active dashboard filters.
+            Pregunta por picos, caídas, promedios o tiempo bajo un umbral usando los filtros activos.
           </p>
         </div>
         <button
@@ -61,8 +61,7 @@ export function ChatPanel({ filters }: ChatPanelProps) {
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {chat.messages.length === 0 ? (
           <div className="rounded-md bg-slate-100 p-3 text-sm leading-6 text-slate-600">
-            Ask about KPIs, trends, instability, distributions, or source-window table rows. If the data is not in
-            DuckDB, the assistant should say so.
+            Puedes preguntar: ¿a qué hora hubo más tiendas visibles?, ¿hubo caídas?, ¿cuánto tiempo estuvo bajo el umbral?
           </div>
         ) : null}
 
@@ -82,7 +81,7 @@ export function ChatPanel({ filters }: ChatPanelProps) {
         {chat.isLoading ? (
           <div className="mr-8 flex items-center gap-2 rounded-md bg-slate-100 p-3 text-sm text-slate-600">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-            Calling backend analytics tools
+            Consultando datos de disponibilidad
           </div>
         ) : null}
 
@@ -95,7 +94,7 @@ export function ChatPanel({ filters }: ChatPanelProps) {
             value={chat.draft}
             onChange={(event: { target: { value: string } }) => chat.setDraft(event.target.value)}
             className="min-w-0 flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm outline-none transition"
-            placeholder="Ask a grounded question"
+            placeholder="Pregunta sobre disponibilidad de tiendas"
           />
           <button
             type="submit"

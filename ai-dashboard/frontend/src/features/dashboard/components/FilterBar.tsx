@@ -52,7 +52,7 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
           />
         </label>
         <label className="text-sm">
-          <span className="mb-1 block font-medium text-slate-700">Ventanas de monitoreo</span>
+          <span className="mb-1 block font-medium text-slate-700">Períodos observados</span>
           <select
             value={filters.sourceFiles}
             multiple

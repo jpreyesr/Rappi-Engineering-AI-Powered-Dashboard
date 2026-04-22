@@ -16,7 +16,7 @@ export function DashboardHeader({ options, kpis, isLoading, sourcesCount }: Dash
       <div>
         <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Prueba Rappi - AI-Powered Dashboard</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          Análisis de disponibilidad de tiendas con filtros, gráficos y conversación sobre los datos cargados.
+          Explora cuántas tiendas estuvieron visibles, cuándo hubo caídas o picos, y qué tan estable fue la disponibilidad.
         </p>
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-2 lg:mt-0">
@@ -26,7 +26,7 @@ export function DashboardHeader({ options, kpis, isLoading, sourcesCount }: Dash
         </div>
         <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
           <Database className="h-4 w-4 text-slate-500" aria-hidden="true" />
-          {formatNumber(sourcesCount ?? null)} ventanas
+          {formatNumber(sourcesCount ?? null)} períodos
         </div>
         <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
           <RefreshCw className={isLoading ? "h-4 w-4 animate-spin text-orange-600" : "h-4 w-4 text-orange-600"} />

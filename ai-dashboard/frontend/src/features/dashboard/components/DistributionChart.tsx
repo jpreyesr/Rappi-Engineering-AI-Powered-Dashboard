@@ -31,8 +31,8 @@ export function DistributionChart({ distribution, isLoading }: DistributionChart
       <div className="mb-4 flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-orange-600" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold text-slate-950">Distribución de disponibilidad</h2>
-          <p className="mt-1 text-sm text-slate-500">Rangos de valores y frecuencia observada.</p>
+          <h2 className="text-lg font-semibold text-slate-950">Distribución de tiendas visibles</h2>
+          <p className="mt-1 text-sm text-slate-500">Cuánto tiempo estuvo la plataforma en cada rango de disponibilidad.</p>
         </div>
       </div>
 
@@ -50,7 +50,7 @@ export function DistributionChart({ distribution, isLoading }: DistributionChart
               <Tooltip
                 formatter={(value: unknown, name: unknown, item: unknown) => {
                   const payload = (item as { payload?: { percentage?: number } }).payload;
-                  return [`${formatNumber(Number(value))} (${formatPercent(payload?.percentage ?? null)})`, "Points"];
+                  return [`${formatNumber(Number(value))} (${formatPercent(payload?.percentage ?? null)})`, "Lecturas"];
                 }}
               />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>

@@ -20,12 +20,12 @@ type StoresTableProps = {
 };
 
 const columns: Array<{ key: StoresTableSortBy; label: string; align?: "right" }> = [
-  { key: "entity_label", label: "Ventana" },
-  { key: "avg_visible_stores", label: "Avg", align: "right" },
-  { key: "min_visible_stores", label: "Min", align: "right" },
-  { key: "max_visible_stores", label: "Max", align: "right" },
-  { key: "stddev_visible_stores", label: "Volatility", align: "right" },
-  { key: "points_count", label: "Puntos", align: "right" },
+  { key: "entity_label", label: "Período" },
+  { key: "avg_visible_stores", label: "Promedio", align: "right" },
+  { key: "min_visible_stores", label: "Mínimo", align: "right" },
+  { key: "max_visible_stores", label: "Máximo", align: "right" },
+  { key: "stddev_visible_stores", label: "Variación", align: "right" },
+  { key: "points_count", label: "Lecturas", align: "right" },
   { key: "min_timestamp", label: "Inicio" },
   { key: "max_timestamp", label: "Fin" },
 ];
@@ -39,8 +39,8 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
     <article className="rounded-lg border">
       <div className="flex flex-col gap-2 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-slate-950">Ventanas de monitoreo</h2>
-          <p className="mt-1 text-sm text-slate-500">Estadísticas por archivo fuente.</p>
+          <h2 className="text-lg font-semibold text-slate-950">Resumen por período observado</h2>
+          <p className="mt-1 text-sm text-slate-500">Cada fila resume el conteo agregado de tiendas visibles en un archivo de observación.</p>
         </div>
         <p className="rounded-md bg-orange-50 px-2.5 py-1 text-sm font-medium text-orange-800">{formatNumber(total)} filas</p>
       </div>
@@ -48,7 +48,7 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
       {isLoading && rows.length === 0 ? <div className="p-4"><LoadingBlock className="h-72" /></div> : null}
       {!isLoading && rows.length === 0 ? (
         <div className="p-4">
-        <EmptyState title="Sin ventanas" description="Limpia filtros o elige un rango más amplio." />
+        <EmptyState title="Sin períodos" description="Limpia filtros o elige un rango más amplio." />
         </div>
       ) : null}
       {rows.length > 0 ? (

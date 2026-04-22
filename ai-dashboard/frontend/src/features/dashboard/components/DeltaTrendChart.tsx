@@ -24,9 +24,9 @@ export function DeltaTrendChart({ deltaTrend, isLoading }: DeltaTrendChartProps)
       <div className="mb-4 flex items-center gap-2">
         <Activity className="h-5 w-5 text-orange-600" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold text-slate-950">Variación entre lecturas</h2>
+          <h2 className="text-lg font-semibold text-slate-950">Cambios en tiendas visibles</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Variación entre puntos; anomalía si cae más de {formatPercent(deltaTrend?.anomaly_drop_pct ?? null)}.
+            Detecta caídas o recuperaciones del conteo; anomalía si cae más de {formatPercent(deltaTrend?.anomaly_drop_pct ?? null)}.
           </p>
         </div>
       </div>
@@ -45,7 +45,7 @@ export function DeltaTrendChart({ deltaTrend, isLoading }: DeltaTrendChartProps)
               <Tooltip
                 formatter={(value: unknown, _name: unknown, item: unknown) => {
                   const payload = (item as { payload?: { deltaPercent?: number | null } }).payload;
-                  return [`${formatNumber(Number(value))} (${formatPercent(payload?.deltaPercent ?? null)})`, "Delta"];
+                  return [`${formatNumber(Number(value))} (${formatPercent(payload?.deltaPercent ?? null)})`, "Cambio de tiendas"];
                 }}
               />
               <Bar dataKey="delta" radius={[3, 3, 0, 0]}>

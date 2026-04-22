@@ -21,18 +21,18 @@ export function HourlyHeatmap({ heatmap, isLoading }: HourlyHeatmapProps) {
       <div className="mb-4 flex items-center gap-2">
         <CalendarClock className="h-5 w-5 text-orange-600" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold text-slate-950">Patrón por hora y día</h2>
-          <p className="mt-1 text-sm text-slate-500">Promedio de tiendas visibles por fecha y hora.</p>
+          <h2 className="text-lg font-semibold text-slate-950">Disponibilidad promedio por hora</h2>
+          <p className="mt-1 text-sm text-slate-500">Identifica horas del día con más o menos tiendas visibles.</p>
         </div>
       </div>
 
       {isLoading && cells.length === 0 ? <LoadingBlock className="h-[260px]" /> : null}
       {!isLoading && cells.length === 0 ? (
-        <EmptyState title="Sin heatmap" description="No hay suficientes puntos para construir el patrón horario." />
+        <EmptyState title="Sin patrón horario" description="No hay suficientes puntos para construir el patrón horario." />
       ) : null}
       {!isLoading && (heatmap?.days_count ?? 0) < 2 && cells.length > 0 ? (
         <p className="mb-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-          Hay datos de un solo día. El heatmap funciona, pero será más útil al cargar más ventanas de otros días.
+          Hay datos de un solo día. El patrón horario será más útil al cargar períodos de otros días.
         </p>
       ) : null}
       {cells.length > 0 ? (

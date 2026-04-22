@@ -10,14 +10,14 @@ type KpiCardsProps = {
 };
 
 const cards = [
-  { key: "current_visible_stores", label: "Última lectura", helper: "Último punto disponible", icon: Activity },
-  { key: "average_visible_stores", label: "Promedio", helper: "Promedio del período", icon: Sigma },
-  { key: "min_visible_stores", label: "Mínimo", helper: "Menor disponibilidad visible", icon: ArrowDownToLine },
-  { key: "max_visible_stores", label: "Máximo", helper: "Pico del período", icon: TrendingUp },
-  { key: "absolute_change_visible_stores", label: "Cambio absoluto", helper: "Fin menos inicio", icon: TrendingUp },
-  { key: "percent_change_visible_stores", label: "Cambio porcentual", helper: "Variación inicio vs fin", icon: Gauge, percent: true },
-  { key: "below_threshold_seconds", label: "Bajo umbral", helper: "Duración bajo el umbral activo", icon: Clock, duration: true },
-  { key: "dominant_behavior", label: "Comportamiento", helper: "Clasificación por ventana", icon: Gauge },
+  { key: "current_visible_stores", label: "Tiendas visibles", helper: "Último conteo observado", icon: Activity },
+  { key: "average_visible_stores", label: "Promedio visible", helper: "Tiendas visibles promedio", icon: Sigma },
+  { key: "min_visible_stores", label: "Punto más bajo", helper: "Menor conteo de tiendas", icon: ArrowDownToLine },
+  { key: "max_visible_stores", label: "Pico de tiendas", helper: "Mayor conteo observado", icon: TrendingUp },
+  { key: "absolute_change_visible_stores", label: "Cambio neto", helper: "Tiendas ganadas o perdidas", icon: TrendingUp },
+  { key: "percent_change_visible_stores", label: "Cambio %", helper: "Variación del conteo", icon: Gauge, percent: true },
+  { key: "below_threshold_seconds", label: "Bajo umbral", helper: "Tiempo con baja disponibilidad", icon: Clock, duration: true },
+  { key: "dominant_behavior", label: "Estabilidad", helper: "Patrón del conteo agregado", icon: Gauge },
 ] as const;
 
 export function KpiCards({ kpis, isLoading }: KpiCardsProps) {
