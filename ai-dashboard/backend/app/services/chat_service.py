@@ -1,4 +1,6 @@
 import json
+import re
+from datetime import datetime
 from typing import Any
 
 import httpx
@@ -54,6 +56,8 @@ class ChatService:
                             "Debes usar tools para respuestas factuales. No inventes cifras. "
                             "La métrica synthetic_monitoring_visible_stores es el conteo agregado de tiendas visibles. "
                             "No existe store_id, categoría ni región; no digas cuáles tiendas específicas estuvieron disponibles."
+                            "Cuando menciones fechas u horas, usa formato humano en español, por ejemplo: "
+                            "'6 de febrero de 2026 a las 10:59 a. m.'. No muestres timestamps ISO crudos."
                         )
                     }
                 ]
@@ -92,6 +96,7 @@ class ChatService:
                         "text": (
                             "Responde en español usando solo los datos devueltos por las tools. "
                             "Si una cifra no está en la respuesta de las tools, di que no está disponible."
+                            "Formatea fechas y horas de forma legible en español; evita strings ISO como 2026-02-06T10:59:40."
                         )
                     }
                 ],
@@ -99,7 +104,7 @@ class ChatService:
         )
         final = self._call_gemini(endpoint, api_key, {**payload, "contents": contents, "tools": []})
         answer = self._extract_gemini_text(final) or "No pude generar una respuesta con los datos disponibles."
-        return ChatResponse(answer=answer, used_ai=True, tool_calls=tool_calls)
+        return ChatResponse(answer=self._humanize_timestamps(answer), used_ai=True, tool_calls=tool_calls)
 
     def suggestions(self) -> ChatSuggestionsResponse:
         return ChatSuggestionsResponse(
@@ -114,6 +119,26 @@ class ChatService:
 
     def _local_answer(self, request: ChatRequest, filters: AnalyticsFilters) -> ChatResponse:
         lower_message = request.message.lower()
+        if ("hora" in lower_message or "cuándo" in lower_message or "cuando" in lower_message) and (
+            "más tiendas" in lower_message or "mas tiendas" in lower_message or "máximo" in lower_message or "maximo" in lower_message
+        ):
+            trend_filters = filters.model_copy(update={"granularity": "raw", "limit": 5000})
+            result = self._run_tool("get_availability_trend", {"granularity": "raw", "limit": 5000}, trend_filters)
+            points = result.get("points", [])
+            peak = max(points, key=lambda point: point.get("visible_stores") or 0) if points else None
+            if peak:
+                answer = (
+                    "Gemini no está configurado todavía, así que usé las herramientas analíticas locales. "
+                    f"El mayor conteo fue de {self._format_number(peak.get('visible_stores'))} tiendas visibles "
+                    f"el {self._format_datetime(peak.get('timestamp'))}."
+                )
+            else:
+                answer = "Gemini no está configurado todavía y no encontré lecturas para calcular el pico."
+            return ChatResponse(
+                answer=answer,
+                used_ai=False,
+                tool_calls=[ToolCallTrace(name="get_availability_trend", arguments={"granularity": "raw", "limit": 5000})],
+            )
         if "unstable" in lower_message or "ranking" in lower_message or "top" in lower_message:
             result = self._run_tool("get_top_unstable_stores", {"limit": 5}, filters)
             first = result["items"][0] if result["items"] else None
@@ -427,3 +452,37 @@ class ChatService:
         if value is None:
             return "not available"
         return f"{round(value):,}"
+
+    def _humanize_timestamps(self, value: str) -> str:
+        pattern = r"\d{4}-\d{2}-\d{2}[T ][0-2]\d:[0-5]\d(?::[0-5]\d(?:\.\d+)?)?"
+        return re.sub(pattern, lambda match: self._format_datetime(match.group(0)), value)
+
+    def _format_datetime(self, value: Any) -> str:
+        if not value:
+            return "fecha no disponible"
+        if isinstance(value, datetime):
+            parsed = value
+        else:
+            raw = str(value).replace("Z", "")
+            try:
+                parsed = datetime.fromisoformat(raw)
+            except ValueError:
+                return str(value)
+
+        months = [
+            "enero",
+            "febrero",
+            "marzo",
+            "abril",
+            "mayo",
+            "junio",
+            "julio",
+            "agosto",
+            "septiembre",
+            "octubre",
+            "noviembre",
+            "diciembre",
+        ]
+        hour_12 = parsed.hour % 12 or 12
+        suffix = "a. m." if parsed.hour < 12 else "p. m."
+        return f"{parsed.day} de {months[parsed.month - 1]} de {parsed.year} a las {hour_12}:{parsed.minute:02d} {suffix}"
