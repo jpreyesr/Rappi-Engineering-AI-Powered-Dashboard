@@ -17,12 +17,12 @@ export function HourlyHeatmap({ heatmap, isLoading }: HourlyHeatmapProps) {
   const hours = Array.from({ length: 24 }, (_, index) => index);
 
   return (
-    <article className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+    <article className="rounded-lg border p-4">
       <div className="mb-4 flex items-center gap-2">
-        <CalendarClock className="h-5 w-5 text-violet-700" aria-hidden="true" />
+        <CalendarClock className="h-5 w-5 text-orange-600" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold text-neutral-950">Patrón por hora y día</h2>
-          <p className="mt-1 text-sm text-neutral-500">Promedio de tiendas visibles por fecha y hora.</p>
+          <h2 className="text-lg font-semibold text-slate-950">Patrón por hora y día</h2>
+          <p className="mt-1 text-sm text-slate-500">Promedio de tiendas visibles por fecha y hora.</p>
         </div>
       </div>
 
@@ -58,7 +58,7 @@ export function HourlyHeatmap({ heatmap, isLoading }: HourlyHeatmapProps) {
                       key={`${date}-${hour}`}
                       title={value ? `${date} ${hour}:00 · ${formatCompactNumber(value)}` : `${date} ${hour}:00 · sin datos`}
                       className="h-7 rounded-sm border border-white"
-                      style={{ backgroundColor: value ? `rgba(5, 150, 105, ${intensity})` : "#f5f5f5" }}
+                      style={{ backgroundColor: value ? `rgba(234, 88, 12, ${intensity})` : "#f8fafc" }}
                     />
                   );
                 })}

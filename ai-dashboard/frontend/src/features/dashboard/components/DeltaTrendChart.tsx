@@ -20,12 +20,12 @@ export function DeltaTrendChart({ deltaTrend, isLoading }: DeltaTrendChartProps)
   }));
 
   return (
-    <article className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+    <article className="rounded-lg border p-4">
       <div className="mb-4 flex items-center gap-2">
-        <Activity className="h-5 w-5 text-rose-700" aria-hidden="true" />
+        <Activity className="h-5 w-5 text-orange-600" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold text-neutral-950">Variación entre lecturas</h2>
-          <p className="mt-1 text-sm text-neutral-500">
+          <h2 className="text-lg font-semibold text-slate-950">Variación entre lecturas</h2>
+          <p className="mt-1 text-sm text-slate-500">
             Variación entre puntos; anomalía si cae más de {formatPercent(deltaTrend?.anomaly_drop_pct ?? null)}.
           </p>
         </div>
@@ -50,7 +50,7 @@ export function DeltaTrendChart({ deltaTrend, isLoading }: DeltaTrendChartProps)
               />
               <Bar dataKey="delta" radius={[3, 3, 0, 0]}>
                 {data.map((entry) => (
-                  <Cell key={`${entry.timestamp}-${entry.delta}`} fill={entry.isAnomaly ? "#dc2626" : entry.delta < 0 ? "#f97316" : "#059669"} />
+                  <Cell key={`${entry.timestamp}-${entry.delta}`} fill={entry.isAnomaly ? "#dc2626" : entry.delta < 0 ? "#f97316" : "#0f766e"} />
                 ))}
               </Bar>
             </BarChart>

@@ -4,8 +4,8 @@
 
 :root {
   color-scheme: light;
-  background: #f6f7f9;
-  color: #17202a;
+  background: #fff7ed;
+  color: #1f2933;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -16,11 +16,31 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #f6f7f9;
+  background:
+    linear-gradient(180deg, #fff7ed 0%, #f8fafc 34%, #eef2f7 100%);
 }
 
 button,
 input,
 textarea {
   font: inherit;
+}
+
+.dashboard-shell article,
+.dashboard-shell aside,
+.surface-panel {
+  border-color: rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.dashboard-shell input:focus,
+.dashboard-shell select:focus,
+.dashboard-shell textarea:focus {
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.14);
+}
+
+.dashboard-shell table tbody tr:hover {
+  background: #fff7ed;
 }

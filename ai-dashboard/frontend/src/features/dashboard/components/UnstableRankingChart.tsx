@@ -26,14 +26,14 @@ export function UnstableRankingChart({ unstable, isLoading }: UnstableRankingCha
   }));
 
   return (
-    <article className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+    <article className="rounded-lg border p-4">
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-700" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-neutral-950">Ventanas más inestables</h2>
+            <AlertTriangle className="h-5 w-5 text-orange-600" aria-hidden="true" />
+            <h2 className="text-lg font-semibold text-slate-950">Ventanas más inestables</h2>
           </div>
-          <p className="mt-1 text-sm text-neutral-500">Ranking por volatilidad de cada ventana fuente.</p>
+          <p className="mt-1 text-sm text-slate-500">Ranking por volatilidad de cada ventana fuente.</p>
         </div>
       </div>
 
@@ -49,7 +49,7 @@ export function UnstableRankingChart({ unstable, isLoading }: UnstableRankingCha
               <XAxis type="number" tickFormatter={formatCompactNumber} tick={{ fontSize: 12, fill: "#525252" }} />
               <YAxis type="category" dataKey="name" width={92} tick={{ fontSize: 12, fill: "#525252" }} />
               <Tooltip formatter={(value: unknown) => [formatNumber(Number(value)), "Volatility"]} />
-              <Bar dataKey="volatility" fill="#d97706" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="volatility" fill="#ea580c" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

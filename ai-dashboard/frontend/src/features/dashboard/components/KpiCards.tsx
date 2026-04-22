@@ -36,19 +36,21 @@ export function KpiCards({ kpis, isLoading }: KpiCardsProps) {
       {cards.map((card) => {
         const Icon = card.icon;
         return (
-          <article key={card.key} className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+          <article key={card.key} className="rounded-lg border p-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-medium text-neutral-600">{card.label}</p>
-              <Icon className="h-4 w-4 shrink-0 text-emerald-700" aria-hidden="true" />
+              <p className="text-sm font-medium text-slate-600">{card.label}</p>
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-orange-50 text-orange-600">
+                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+              </span>
             </div>
-            <p className="mt-3 text-3xl font-semibold text-neutral-950">
+            <p className="mt-3 text-3xl font-semibold text-slate-950">
               {"duration" in card
                 ? formatDuration(Number(kpis?.[card.key] ?? 0))
                 : "percent" in card
                   ? formatPercent(Number(kpis?.[card.key] ?? 0))
                   : formatNumber(kpis?.[card.key] ?? null)}
             </p>
-            <p className="mt-1 min-h-5 text-xs text-neutral-500">{card.helper}</p>
+            <p className="mt-1 min-h-5 text-xs text-slate-500">{card.helper}</p>
           </article>
         );
       })}

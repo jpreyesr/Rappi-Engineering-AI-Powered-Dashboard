@@ -36,13 +36,13 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
   const pageCount = Math.max(Math.ceil(total / tableState.pageSize), 1);
 
   return (
-    <article className="rounded-md border border-neutral-200 bg-white shadow-sm">
-      <div className="flex flex-col gap-2 border-b border-neutral-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+    <article className="rounded-lg border">
+      <div className="flex flex-col gap-2 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-neutral-950">Ventanas de monitoreo</h2>
-          <p className="mt-1 text-sm text-neutral-500">Estadísticas por archivo fuente.</p>
+          <h2 className="text-lg font-semibold text-slate-950">Ventanas de monitoreo</h2>
+          <p className="mt-1 text-sm text-slate-500">Estadísticas por archivo fuente.</p>
         </div>
-        <p className="text-sm text-neutral-500">{formatNumber(total)} rows</p>
+        <p className="rounded-md bg-orange-50 px-2.5 py-1 text-sm font-medium text-orange-800">{formatNumber(total)} filas</p>
       </div>
 
       {isLoading && rows.length === 0 ? <div className="p-4"><LoadingBlock className="h-72" /></div> : null}
@@ -55,7 +55,7 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
         <>
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse text-sm">
-              <thead className="bg-neutral-50 text-left text-xs font-semibold uppercase tracking-normal text-neutral-500">
+              <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-normal text-slate-500">
                 <tr>
                   {columns.map((column) => (
                     <th key={column.key} className={column.align === "right" ? "px-4 py-3 text-right" : "px-4 py-3"}>
@@ -82,44 +82,44 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
                   <th className="px-4 py-3">Comportamiento</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100">
+              <tbody className="divide-y divide-slate-100">
                 {rows.map((row) => (
-                  <tr key={row.entity_id} className="hover:bg-neutral-50">
-                    <td className="max-w-[280px] truncate px-4 py-3 font-medium text-neutral-800" title={row.entity_label}>
+                  <tr key={row.entity_id} className="hover:bg-orange-50">
+                    <td className="max-w-[280px] truncate px-4 py-3 font-medium text-slate-800" title={row.entity_label}>
                       {row.entity_label}
                     </td>
-                    <td className="px-4 py-3 text-right text-neutral-700">{formatNumber(row.avg_visible_stores)}</td>
-                    <td className="px-4 py-3 text-right text-neutral-700">{formatNumber(row.min_visible_stores)}</td>
-                    <td className="px-4 py-3 text-right text-neutral-700">{formatNumber(row.max_visible_stores)}</td>
-                    <td className="px-4 py-3 text-right text-neutral-700">{formatNumber(row.stddev_visible_stores)}</td>
-                    <td className="px-4 py-3 text-right text-neutral-700">{formatNumber(row.points_count)}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-neutral-700">{formatDateTime(row.min_timestamp)}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-neutral-700">{formatDateTime(row.max_timestamp)}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-neutral-700">{formatBehavior(row.behavior)}</td>
+                    <td className="px-4 py-3 text-right text-slate-700">{formatNumber(row.avg_visible_stores)}</td>
+                    <td className="px-4 py-3 text-right text-slate-700">{formatNumber(row.min_visible_stores)}</td>
+                    <td className="px-4 py-3 text-right text-slate-700">{formatNumber(row.max_visible_stores)}</td>
+                    <td className="px-4 py-3 text-right text-slate-700">{formatNumber(row.stddev_visible_stores)}</td>
+                    <td className="px-4 py-3 text-right text-slate-700">{formatNumber(row.points_count)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-slate-700">{formatDateTime(row.min_timestamp)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-slate-700">{formatDateTime(row.max_timestamp)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-slate-700">{formatBehavior(row.behavior)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between border-t border-neutral-200 px-4 py-3">
+          <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3">
             <button
               type="button"
               onClick={() => onPageChange(tableState.page - 1)}
               disabled={tableState.page === 0 || isLoading}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 text-slate-700 transition hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-40"
               title="Página anterior"
               aria-label="Página anterior"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             </button>
-            <p className="text-sm text-neutral-600">
+            <p className="text-sm text-slate-600">
               Página {tableState.page + 1} de {pageCount}
             </p>
             <button
               type="button"
               onClick={() => onPageChange(tableState.page + 1)}
               disabled={tableState.page + 1 >= pageCount || isLoading}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 text-slate-700 transition hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-40"
               title="Página siguiente"
               aria-label="Página siguiente"
             >

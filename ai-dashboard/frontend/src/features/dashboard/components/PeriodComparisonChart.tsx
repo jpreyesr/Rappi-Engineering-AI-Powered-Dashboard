@@ -27,12 +27,12 @@ export function PeriodComparisonChart({ comparison, isLoading }: PeriodCompariso
   const data = Array.from(dataByOffset.values()).sort((left, right) => left.offset - right.offset);
 
   return (
-    <article className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+    <article className="rounded-lg border p-4">
       <div className="mb-4 flex items-center gap-2">
-        <GitCompare className="h-5 w-5 text-sky-700" aria-hidden="true" />
+        <GitCompare className="h-5 w-5 text-orange-600" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold text-neutral-950">Comparativa de períodos</h2>
-          <p className="mt-1 text-sm text-neutral-500">Período actual contra el período inmediatamente anterior.</p>
+          <h2 className="text-lg font-semibold text-slate-950">Comparativa de períodos</h2>
+          <p className="mt-1 text-sm text-slate-500">Período actual contra el período inmediatamente anterior.</p>
         </div>
       </div>
 
@@ -48,8 +48,8 @@ export function PeriodComparisonChart({ comparison, isLoading }: PeriodCompariso
               <XAxis dataKey="label" minTickGap={28} tick={{ fontSize: 12, fill: "#525252" }} />
               <YAxis tickFormatter={formatCompactNumber} width={72} tick={{ fontSize: 12, fill: "#525252" }} />
               <Tooltip formatter={(value: unknown, name: unknown) => [formatNumber(Number(value)), name === "actual" ? "Actual" : "Anterior"]} />
-              <Line type="monotone" dataKey="actual" stroke="#047857" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="anterior" stroke="#2563eb" strokeWidth={2} dot={false} strokeDasharray="5 5" />
+              <Line type="monotone" dataKey="actual" stroke="#ea580c" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="anterior" stroke="#0f766e" strokeWidth={2} dot={false} strokeDasharray="5 5" />
             </LineChart>
           </ResponsiveContainer>
         </div>

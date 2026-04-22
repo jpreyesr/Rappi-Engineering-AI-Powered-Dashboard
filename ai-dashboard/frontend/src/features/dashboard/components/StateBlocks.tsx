@@ -28,14 +28,14 @@ export function ErrorBanner({ message }: ErrorBannerProps) {
 
 export function EmptyState({ title, description }: EmptyStateProps) {
   return (
-    <div className="flex h-full min-h-44 flex-col items-center justify-center rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-4 py-8 text-center">
-      <Inbox className="h-6 w-6 text-neutral-400" aria-hidden="true" />
-      <p className="mt-3 text-sm font-medium text-neutral-800">{title}</p>
-      <p className="mt-1 max-w-sm text-sm leading-6 text-neutral-500">{description}</p>
+    <div className="flex h-full min-h-44 flex-col items-center justify-center rounded-md border border-dashed border-orange-200 bg-orange-50/60 px-4 py-8 text-center">
+      <Inbox className="h-6 w-6 text-orange-400" aria-hidden="true" />
+      <p className="mt-3 text-sm font-medium text-slate-800">{title}</p>
+      <p className="mt-1 max-w-sm text-sm leading-6 text-slate-500">{description}</p>
     </div>
   );
 }
 
 export function LoadingBlock({ className = "h-40" }: LoadingBlockProps) {
-  return <div className={`${className} animate-pulse rounded-md border border-neutral-200 bg-white`} />;
+  return <div className={`${className} animate-pulse rounded-md border border-orange-100 bg-white/80`} />;
 }

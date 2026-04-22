@@ -27,12 +27,12 @@ export function DistributionChart({ distribution, isLoading }: DistributionChart
   }));
 
   return (
-    <article className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+    <article className="rounded-lg border p-4">
       <div className="mb-4 flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-blue-700" aria-hidden="true" />
+            <BarChart3 className="h-5 w-5 text-orange-600" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold text-neutral-950">Distribución de disponibilidad</h2>
-          <p className="mt-1 text-sm text-neutral-500">Rangos de valores y frecuencia observada.</p>
+          <h2 className="text-lg font-semibold text-slate-950">Distribución de disponibilidad</h2>
+          <p className="mt-1 text-sm text-slate-500">Rangos de valores y frecuencia observada.</p>
         </div>
       </div>
 
@@ -55,7 +55,7 @@ export function DistributionChart({ distribution, isLoading }: DistributionChart
               />
               <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                 {distribution?.buckets.map((bucket) => (
-                  <Cell key={bucket.bucket_index} fill={bucket.contains_latest ? "#059669" : "#2563eb"} />
+                  <Cell key={bucket.bucket_index} fill={bucket.contains_latest ? "#ea580c" : "#334155"} />
                 ))}
               </Bar>
             </BarChart>

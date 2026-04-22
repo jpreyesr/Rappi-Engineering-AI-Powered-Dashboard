@@ -27,18 +27,18 @@ export function TrendChart({ trend, isLoading, yScale, recommendedYScale }: Tren
   const effectiveScale = yScale === "auto" ? recommendedYScale ?? "linear" : yScale;
 
   return (
-    <article className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
+    <article className="rounded-lg border p-4">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <LineChart className="h-5 w-5 text-emerald-700" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-neutral-950">Tiendas visibles en el tiempo</h2>
+            <LineChart className="h-5 w-5 text-orange-600" aria-hidden="true" />
+            <h2 className="text-lg font-semibold text-slate-950">Tiendas visibles en el tiempo</h2>
           </div>
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-slate-500">
             Agregado por {trend?.granularity ?? "1h"} · escala {effectiveScale === "log" ? "logarítmica" : "lineal"}
           </p>
         </div>
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-slate-500">
           {chartData.length > 0
             ? `${formatDateTime(chartData[0].timestamp)} - ${formatDateTime(chartData[chartData.length - 1].timestamp)}`
             : "No range"}
@@ -74,8 +74,8 @@ export function TrendChart({ trend, isLoading, yScale, recommendedYScale }: Tren
               <Area
                 type="monotone"
                 dataKey="visibleStores"
-                stroke="#047857"
-                fill="#a7f3d0"
+                stroke="#ea580c"
+                fill="#fed7aa"
                 fillOpacity={0.45}
                 strokeWidth={2}
                 dot={false}
