@@ -3,6 +3,7 @@ FROM node:20-bookworm-slim AS frontend-build
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
+RUN npm install --no-save @rollup/rollup-linux-arm64-gnu @rollup/rollup-linux-x64-gnu
 COPY frontend ./
 ARG VITE_API_BASE_URL=
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
