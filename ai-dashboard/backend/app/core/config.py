@@ -15,7 +15,9 @@ class Settings(BaseSettings):
     duckdb_path: Path = Field(default=Path("data/processed/dashboard.duckdb"))
     openai_api_key: str | None = None
     openai_model: str = "gpt-4.1-mini"
-    model_name: str | None = None
+    gemini_api_key: str | None = None
+    google_api_key: str | None = None
+    model_name: str | None = "gemini-2.5-flash"
     cors_origins: list[str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
@@ -35,7 +37,11 @@ class Settings(BaseSettings):
 
     @property
     def resolved_model_name(self) -> str:
-        return self.model_name or self.openai_model
+        return self.model_name or "gemini-2.5-flash"
+
+    @property
+    def resolved_gemini_api_key(self) -> str | None:
+        return self.gemini_api_key or self.google_api_key
 
 
 @lru_cache

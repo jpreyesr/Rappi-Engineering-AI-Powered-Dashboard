@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-from openai import OpenAI
+import httpx
 
 from app.core.config import Settings
 from app.schemas.chat import ChatMessage, ChatRequest, ChatResponse, ChatSuggestionsResponse, ToolCallTrace
@@ -16,65 +16,89 @@ class ChatService:
 
     def answer(self, request: ChatRequest) -> ChatResponse:
         filters = request.filters or AnalyticsFilters()
-        if not self.settings.openai_api_key:
+        if not self.settings.resolved_gemini_api_key:
+            return self._local_answer(request, filters)
+
+        try:
+            return self._gemini_answer(request, filters)
+        except Exception as exc:
+            fallback = self._local_answer(request, filters)
+            return ChatResponse(
+                answer=(
+                    "Gemini no pudo responder en este momento, así que usé las herramientas analíticas locales. "
+                    f"Detalle técnico: {type(exc).__name__}."
+                    "\n\n"
+                    f"{fallback.answer}"
+                ),
+                used_ai=False,
+                tool_calls=fallback.tool_calls,
+            )
+
+    def _gemini_answer(self, request: ChatRequest, filters: AnalyticsFilters) -> ChatResponse:
+        api_key = self.settings.resolved_gemini_api_key
+        if not api_key:
             return self._local_answer(request, filters)
 
         tool_calls: list[ToolCallTrace] = []
-        client = OpenAI(api_key=self.settings.openai_api_key)
-        messages = self._build_messages(request.history, request.message, filters)
-
-        first = client.chat.completions.create(
-            model=self.settings.resolved_model_name,
-            messages=messages,
-            tools=self._tools(),
-            tool_choice="auto",
+        contents = self._build_gemini_contents(request.history, request.message, filters)
+        endpoint = (
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{self.settings.resolved_model_name}:generateContent"
         )
-        assistant_message = first.choices[0].message
-        messages.append(assistant_message.model_dump(exclude_none=True))
+        payload = {
+            "systemInstruction": {
+                "parts": [
+                    {
+                        "text": (
+                            "Eres un asistente analítico para disponibilidad histórica de tiendas. "
+                            "Debes usar tools para respuestas factuales. No inventes cifras. "
+                            "La métrica synthetic_monitoring_visible_stores es el conteo agregado de tiendas visibles. "
+                            "No existe store_id, categoría ni región; no digas cuáles tiendas específicas estuvieron disponibles."
+                        )
+                    }
+                ]
+            },
+            "contents": contents,
+            "tools": [{"functionDeclarations": self._gemini_tools()}],
+            "generationConfig": {"temperature": 0.2},
+        }
 
-        for call in assistant_message.tool_calls or []:
-            arguments = self._parse_arguments(call.function.arguments)
-            result = self._run_tool(call.function.name, arguments, filters)
-            tool_calls.append(ToolCallTrace(name=call.function.name, arguments=arguments))
-            messages.append(
-                {
-                    "role": "tool",
-                    "tool_call_id": call.id,
-                    "content": json.dumps(result, default=str),
-                }
-            )
-
-        if not tool_calls:
+        first = self._call_gemini(endpoint, api_key, payload)
+        function_calls = self._extract_gemini_function_calls(first)
+        if not function_calls:
             result = self._run_tool("get_kpis", {}, filters)
             tool_calls.append(ToolCallTrace(name="get_kpis", arguments={}))
-            messages.append(
-                {
-                    "role": "assistant",
-                    "tool_calls": [
-                        {
-                            "id": "forced_get_kpis",
-                            "type": "function",
-                            "function": {"name": "get_kpis", "arguments": "{}"},
-                        }
-                    ],
-                }
-            )
-            messages.append({"role": "tool", "tool_call_id": "forced_get_kpis", "content": json.dumps(result, default=str)})
+            function_calls = [{"name": "get_kpis", "args": {}}]
+        else:
+            result = None
 
-        final = client.chat.completions.create(
-            model=self.settings.resolved_model_name,
-            messages=[
-                *messages,
-                {
-                    "role": "system",
-                    "content": (
-                        "Answer using only facts returned by tools. If the tools do not contain a requested number, "
-                        "say that the data is not available. Keep the answer concise and cite the relevant metric names."
-                    ),
-                },
-            ],
+        function_response_parts = []
+        for function_call in function_calls:
+            name = function_call.get("name")
+            arguments = function_call.get("args") if isinstance(function_call.get("args"), dict) else {}
+            if not isinstance(name, str):
+                continue
+            result = self._run_tool(name, arguments, filters)
+            tool_calls.append(ToolCallTrace(name=name, arguments=arguments))
+            function_response_parts.append({"functionResponse": {"name": name, "response": result}})
+
+        contents.append({"role": "model", "parts": [{"functionCall": call} for call in function_calls]})
+        contents.append({"role": "user", "parts": function_response_parts})
+        contents.append(
+            {
+                "role": "user",
+                "parts": [
+                    {
+                        "text": (
+                            "Responde en español usando solo los datos devueltos por las tools. "
+                            "Si una cifra no está en la respuesta de las tools, di que no está disponible."
+                        )
+                    }
+                ],
+            }
         )
-        answer = final.choices[0].message.content or "I could not generate an answer from the available tool results."
+        final = self._call_gemini(endpoint, api_key, {**payload, "contents": contents, "tools": []})
+        answer = self._extract_gemini_text(final) or "No pude generar una respuesta con los datos disponibles."
         return ChatResponse(answer=answer, used_ai=True, tool_calls=tool_calls)
 
     def suggestions(self) -> ChatSuggestionsResponse:
@@ -84,7 +108,7 @@ class ChatService:
                 "¿Cuánto tiempo estuvo la disponibilidad por debajo del umbral?",
                 "¿Hubo caídas bruscas durante la tarde?",
                 "¿Cuál fue el promedio de tiendas visibles entre estas horas?",
-                "¿Alguna ventana parece un ramp-up del sistema?",
+                "¿Algún período parece un ramp-up del sistema?",
             ]
         )
 
@@ -94,20 +118,20 @@ class ChatService:
             result = self._run_tool("get_top_unstable_stores", {"limit": 5}, filters)
             first = result["items"][0] if result["items"] else None
             answer = (
-                "OpenAI is not configured yet, so I used backend tools directly. "
-                f"The most unstable source window is {first['entity_label']} with volatility "
+                "Gemini no está configurado todavía, así que usé las herramientas analíticas locales. "
+                f"El período con mayor variación es {first['entity_label']} con variación "
                 f"{self._format_number(first['stddev_visible_stores'])}."
                 if first
-                else "OpenAI is not configured yet, and no unstable source windows matched the filters."
+                else "Gemini no está configurado todavía y ningún período coincide con los filtros."
             )
             return ChatResponse(answer=answer, used_ai=False, tool_calls=[ToolCallTrace(name="get_top_unstable_stores", arguments={"limit": 5})])
 
         result = self._run_tool("get_kpis", {}, filters)
         answer = (
-            "OpenAI is not configured yet, so I used backend tools directly. "
-            f"Current visible stores are {self._format_number(result['current_visible_stores'])}, "
-            f"latest delta is {self._format_number(result['delta_visible_stores'])}, "
-            f"and the selected range has {self._format_number(result['points_count'])} points."
+            "Gemini no está configurado todavía, así que usé las herramientas analíticas locales. "
+            f"Las tiendas visibles actuales son {self._format_number(result['current_visible_stores'])}, "
+            f"el último cambio es {self._format_number(result['delta_visible_stores'])}, "
+            f"y el rango seleccionado tiene {self._format_number(result['points_count'])} lecturas."
         )
         return ChatResponse(answer=answer, used_ai=False, tool_calls=[ToolCallTrace(name="get_kpis", arguments={})])
 
@@ -194,7 +218,7 @@ class ChatService:
                 "content": (
                     "You are a semantic analytics assistant for an AI-Powered Dashboard. "
                     "You must use tools for factual answers. Do not invent figures. "
-                    "The frontend never calls OpenAI; all tools run in the backend. "
+                    "The frontend never calls Gemini; all tools run in the backend. "
                     "The metric synthetic_monitoring_visible_stores is a synthetic monitoring time series of visible stores. "
                     "CSV timestamp columns are observations at native 10-second granularity. "
                     "Important: the current dataset does not include individual stores; source_file/source windows are monitoring windows, not stores."
@@ -315,6 +339,73 @@ class ChatService:
                 "parameters": {"type": "object", "properties": properties, "additionalProperties": False},
             },
         }
+
+    def _gemini_tools(self) -> list[dict[str, Any]]:
+        declarations = []
+        for tool in self._tools():
+            function = tool["function"]
+            declarations.append(
+                {
+                    "name": function["name"],
+                    "description": function["description"],
+                    "parameters": self._clean_gemini_schema(function["parameters"]),
+                }
+            )
+        return declarations
+
+    def _clean_gemini_schema(self, schema: dict[str, Any]) -> dict[str, Any]:
+        cleaned: dict[str, Any] = {}
+        for key, value in schema.items():
+            if key == "additionalProperties":
+                continue
+            if isinstance(value, dict):
+                cleaned[key] = self._clean_gemini_schema(value)
+            elif isinstance(value, list):
+                cleaned[key] = [self._clean_gemini_schema(item) if isinstance(item, dict) else item for item in value]
+            else:
+                cleaned[key] = value
+        return cleaned
+
+    def _build_gemini_contents(
+        self,
+        history: list[ChatMessage],
+        message: str,
+        filters: AnalyticsFilters,
+    ) -> list[dict[str, Any]]:
+        contents: list[dict[str, Any]] = [
+            {
+                "role": "user",
+                "parts": [{"text": f"Filtros activos del dashboard: {filters.model_dump(mode='json')}"}],
+            }
+        ]
+        for item in history[-8:]:
+            role = "model" if item.role == "assistant" else "user"
+            contents.append({"role": role, "parts": [{"text": item.content}]})
+        contents.append({"role": "user", "parts": [{"text": message}]})
+        return contents
+
+    def _call_gemini(self, endpoint: str, api_key: str, payload: dict[str, Any]) -> dict[str, Any]:
+        response = httpx.post(endpoint, params={"key": api_key}, json=payload, timeout=45)
+        response.raise_for_status()
+        return response.json()
+
+    def _extract_gemini_function_calls(self, payload: dict[str, Any]) -> list[dict[str, Any]]:
+        calls: list[dict[str, Any]] = []
+        for candidate in payload.get("candidates", []):
+            for part in candidate.get("content", {}).get("parts", []):
+                function_call = part.get("functionCall")
+                if isinstance(function_call, dict):
+                    calls.append(function_call)
+        return calls
+
+    def _extract_gemini_text(self, payload: dict[str, Any]) -> str:
+        chunks: list[str] = []
+        for candidate in payload.get("candidates", []):
+            for part in candidate.get("content", {}).get("parts", []):
+                text = part.get("text")
+                if isinstance(text, str):
+                    chunks.append(text)
+        return "\n".join(chunks).strip()
 
     def _parse_arguments(self, raw_arguments: str | None) -> dict[str, Any]:
         if not raw_arguments:

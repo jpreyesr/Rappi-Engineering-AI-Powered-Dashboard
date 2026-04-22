@@ -3,9 +3,9 @@
 ## Stack
 
 - Frontend: React, TypeScript, Vite, Tailwind CSS, Recharts
-- Backend: FastAPI, Pydantic, OpenAI Python SDK
+- Backend: FastAPI, Pydantic, Gemini API por HTTP
 - Datos: DuckDB
-- AI: OpenAI con tool calling
+- AI: Gemini con function calling
 - Forma de ejecución: monolito modular local
 
 ## Monolito Modular
@@ -40,7 +40,7 @@ Módulos del frontend:
 6. `AnalyticsService` transforma filas del repositorio en schemas reutilizables.
 7. Los componentes del dashboard llaman endpoints analíticos mediante servicios del frontend.
 8. El chat envía mensaje, filtros e historial corto al backend.
-9. `ChatService` usa tool calling de OpenAI y cada tool llama el mismo `AnalyticsService` usado por el dashboard.
+9. `ChatService` usa function calling de Gemini y cada tool llama el mismo `AnalyticsService` usado por el dashboard.
 
 ## Fuente De Verdad
 
@@ -127,9 +127,9 @@ Los gráficos de delta y anomalías existen porque una caída rápida puede ser 
 Variables de entorno:
 
 - `DUCKDB_PATH`: ruta del archivo DuckDB local
-- `OPENAI_API_KEY`: API key de OpenAI, solo backend
+- `GEMINI_API_KEY`: API key de Gemini, solo backend
 - `MODEL_NAME`: nombre configurable del modelo preferido
-- `OPENAI_MODEL`: alias de compatibilidad
+- `GOOGLE_API_KEY`: alias de compatibilidad
 - `VITE_API_BASE_URL`: URL base del backend para el frontend
 
-La API key de OpenAI nunca se expone al navegador.
+La API key de Gemini nunca se expone al navegador.

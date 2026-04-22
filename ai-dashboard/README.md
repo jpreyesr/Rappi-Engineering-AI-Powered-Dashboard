@@ -11,7 +11,7 @@ transpone esas columnas a una serie temporal normalizada antes de calcular KPIs,
 - Frontend: React, TypeScript, Vite, Tailwind CSS, Recharts
 - Backend: Python, FastAPI
 - Datos: DuckDB
-- AI: OpenAI API con tool calling ejecutado en backend
+- AI: Gemini API con function calling ejecutado en backend
 - Arquitectura: monolito modular
 
 ## Estructura Del Proyecto
@@ -55,14 +55,14 @@ Crea un archivo de entorno local si lo necesitas:
 cp ../.env.example .env
 ```
 
-Para habilitar el chat con AI, configura:
+Para habilitar el chat con AI, configura una API key de Gemini:
 
 ```bash
-OPENAI_API_KEY=tu_api_key
-MODEL_NAME=gpt-4.1-mini
+GEMINI_API_KEY=tu_api_key
+MODEL_NAME=gemini-2.5-flash
 ```
 
-`OPENAI_MODEL` también funciona como alias de compatibilidad, pero `MODEL_NAME` es el nombre preferido.
+`GOOGLE_API_KEY` también funciona como alias de compatibilidad, pero `GEMINI_API_KEY` es el nombre preferido.
 
 Ejecuta el backend:
 
