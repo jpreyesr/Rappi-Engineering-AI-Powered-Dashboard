@@ -5,7 +5,6 @@ import type { FilterOptionsResponse, Granularity } from "../types";
 type FilterState = {
   startDate: string;
   endDate: string;
-  metric: string;
   sourceFiles: string[];
   granularity: Granularity;
   hourFrom: string;
@@ -51,21 +50,6 @@ export function FilterBar({ filters, options, isLoading, onChange, onReset }: Fi
             onChange={(event: { target: { value: string } }) => onChange({ endDate: event.target.value })}
             className="h-10 w-full rounded-md border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100 disabled:bg-neutral-100"
           />
-        </label>
-        <label className="text-sm">
-          <span className="mb-1 block font-medium text-neutral-700">Métrica</span>
-          <select
-            value={filters.metric}
-            disabled={isLoading}
-            onChange={(event: { target: { value: string } }) => onChange({ metric: event.target.value })}
-            className="h-10 w-full rounded-md border border-neutral-300 bg-white px-3 text-sm text-neutral-900 outline-none focus:border-emerald-700 focus:ring-2 focus:ring-emerald-100 disabled:bg-neutral-100"
-          >
-            {(options?.metrics ?? []).map((metric) => (
-              <option key={metric} value={metric}>
-                {metric}
-              </option>
-            ))}
-          </select>
         </label>
         <label className="text-sm">
           <span className="mb-1 block font-medium text-neutral-700">Ventanas de monitoreo</span>

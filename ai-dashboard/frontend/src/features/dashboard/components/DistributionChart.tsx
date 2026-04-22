@@ -32,7 +32,7 @@ export function DistributionChart({ distribution, isLoading }: DistributionChart
             <BarChart3 className="h-5 w-5 text-blue-700" aria-hidden="true" />
         <div>
           <h2 className="text-lg font-semibold text-neutral-950">Distribución de disponibilidad</h2>
-          <p className="mt-1 text-sm text-neutral-500">Buckets backend por conteo de tiendas visibles.</p>
+          <p className="mt-1 text-sm text-neutral-500">Rangos de valores y frecuencia observada.</p>
         </div>
       </div>
 

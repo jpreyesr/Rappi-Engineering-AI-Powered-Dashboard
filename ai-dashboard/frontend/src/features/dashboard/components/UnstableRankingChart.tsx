@@ -33,7 +33,7 @@ export function UnstableRankingChart({ unstable, isLoading }: UnstableRankingCha
             <AlertTriangle className="h-5 w-5 text-amber-700" aria-hidden="true" />
             <h2 className="text-lg font-semibold text-neutral-950">Ventanas más inestables</h2>
           </div>
-          <p className="mt-1 text-sm text-neutral-500">Ranking backend por volatilidad de cada ventana fuente.</p>
+          <p className="mt-1 text-sm text-neutral-500">Ranking por volatilidad de cada ventana fuente.</p>
         </div>
       </div>
 

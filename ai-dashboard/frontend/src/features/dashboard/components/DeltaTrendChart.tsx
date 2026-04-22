@@ -26,7 +26,7 @@ export function DeltaTrendChart({ deltaTrend, isLoading }: DeltaTrendChartProps)
         <div>
           <h2 className="text-lg font-semibold text-neutral-950">Variación entre lecturas</h2>
           <p className="mt-1 text-sm text-neutral-500">
-            Delta calculado en backend; anomalía si cae más de {formatPercent(deltaTrend?.anomaly_drop_pct ?? null)}.
+            Variación entre puntos; anomalía si cae más de {formatPercent(deltaTrend?.anomaly_drop_pct ?? null)}.
           </p>
         </div>
       </div>

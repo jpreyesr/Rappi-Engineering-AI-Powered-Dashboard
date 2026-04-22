@@ -22,7 +22,7 @@ export function HourlyHeatmap({ heatmap, isLoading }: HourlyHeatmapProps) {
         <CalendarClock className="h-5 w-5 text-violet-700" aria-hidden="true" />
         <div>
           <h2 className="text-lg font-semibold text-neutral-950">Patrón por hora y día</h2>
-          <p className="mt-1 text-sm text-neutral-500">Promedio backend de tiendas visibles por fecha y hora.</p>
+          <p className="mt-1 text-sm text-neutral-500">Promedio de tiendas visibles por fecha y hora.</p>
         </div>
       </div>
 

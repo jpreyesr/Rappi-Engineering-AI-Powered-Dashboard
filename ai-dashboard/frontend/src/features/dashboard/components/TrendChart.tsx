@@ -35,7 +35,7 @@ export function TrendChart({ trend, isLoading, yScale, recommendedYScale }: Tren
             <h2 className="text-lg font-semibold text-neutral-950">Tiendas visibles en el tiempo</h2>
           </div>
           <p className="mt-1 text-sm text-neutral-500">
-            Agregado backend por {trend?.granularity ?? "1h"} · escala {effectiveScale === "log" ? "logarítmica" : "lineal"}
+            Agregado por {trend?.granularity ?? "1h"} · escala {effectiveScale === "log" ? "logarítmica" : "lineal"}
           </p>
         </div>
         <p className="text-sm text-neutral-500">

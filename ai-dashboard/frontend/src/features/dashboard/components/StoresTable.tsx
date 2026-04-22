@@ -40,7 +40,7 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
       <div className="flex flex-col gap-2 border-b border-neutral-200 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold text-neutral-950">Ventanas de monitoreo</h2>
-          <p className="mt-1 text-sm text-neutral-500">Estadísticas por archivo fuente, calculadas en backend.</p>
+          <p className="mt-1 text-sm text-neutral-500">Estadísticas por archivo fuente.</p>
         </div>
         <p className="text-sm text-neutral-500">{formatNumber(total)} rows</p>
       </div>
@@ -136,5 +136,17 @@ function formatBehavior(value?: string | null): string {
   if (!value) {
     return "-";
   }
-  return value.replace("ramp_up", "ramp-up").replace("stable", "estable").replace("decreasing", "caída").replace("oscillating", "oscilante");
+  if (value === "ramp_up") {
+    return "ramp-up";
+  }
+  if (value === "stable") {
+    return "estable";
+  }
+  if (value === "decreasing") {
+    return "caída";
+  }
+  if (value === "oscillating") {
+    return "oscilante";
+  }
+  return value;
 }

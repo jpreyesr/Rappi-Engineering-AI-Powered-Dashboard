@@ -10,7 +10,7 @@ type KpiCardsProps = {
 };
 
 const cards = [
-  { key: "current_visible_stores", label: "Última lectura", helper: "Último punto del backend", icon: Activity },
+  { key: "current_visible_stores", label: "Última lectura", helper: "Último punto disponible", icon: Activity },
   { key: "average_visible_stores", label: "Promedio", helper: "Promedio del período", icon: Sigma },
   { key: "min_visible_stores", label: "Mínimo", helper: "Menor disponibilidad visible", icon: ArrowDownToLine },
   { key: "max_visible_stores", label: "Máximo", helper: "Pico del período", icon: TrendingUp },

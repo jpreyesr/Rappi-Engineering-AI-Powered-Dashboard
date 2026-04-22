@@ -14,11 +14,9 @@ export function DashboardHeader({ options, kpis, isLoading, sourcesCount }: Dash
   return (
     <header className="flex flex-col gap-4 border-b border-neutral-200 pb-5 lg:flex-row lg:items-end lg:justify-between">
       <div>
-        <p className="text-sm font-medium text-emerald-700">Monitoreo sintético · analítica en backend</p>
         <h1 className="mt-1 text-3xl font-semibold tracking-normal text-neutral-950">AI-Powered Availability Dashboard</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-neutral-600">
-          Serie temporal de tiendas visibles en el tiempo. Los CSVs se transponen y unifican en DuckDB; dashboard y chat
-          consumen la misma capa analítica.
+          Análisis de disponibilidad de tiendas con filtros, gráficos y conversación sobre los datos cargados.
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
