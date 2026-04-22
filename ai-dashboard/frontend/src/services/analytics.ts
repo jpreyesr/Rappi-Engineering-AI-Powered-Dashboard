@@ -3,8 +3,12 @@ import type {
   AnalyticsKpisResponse,
   AvailabilitySummary,
   AvailabilityTrendResponse,
+  DataSourcesResponse,
+  DeltaTrendResponse,
   DistributionResponse,
   FilterOptionsResponse,
+  HourlyHeatmapResponse,
+  PeriodComparisonResponse,
   StoresTableResponse,
   TimeSeriesResponse,
   TopUnstableStoresResponse,
@@ -23,6 +27,18 @@ export function getAvailabilityTrend(filters: AnalyticsFilters): Promise<Availab
   return apiPost<AvailabilityTrendResponse, AnalyticsFilters>("/api/analytics/availability-trend", filters);
 }
 
+export function getDeltaTrend(filters: AnalyticsFilters): Promise<DeltaTrendResponse> {
+  return apiPost<DeltaTrendResponse, AnalyticsFilters>("/api/analytics/delta-trend", filters);
+}
+
+export function getHourlyHeatmap(filters: AnalyticsFilters): Promise<HourlyHeatmapResponse> {
+  return apiPost<HourlyHeatmapResponse, AnalyticsFilters>("/api/analytics/hourly-heatmap", filters);
+}
+
+export function getPeriodComparison(filters: AnalyticsFilters): Promise<PeriodComparisonResponse> {
+  return apiPost<PeriodComparisonResponse, AnalyticsFilters>("/api/analytics/period-comparison", filters);
+}
+
 export function getTopUnstableStores(filters: AnalyticsFilters): Promise<TopUnstableStoresResponse> {
   return apiPost<TopUnstableStoresResponse, AnalyticsFilters>("/api/analytics/top-unstable-stores", filters);
 }
@@ -32,7 +48,11 @@ export function getDistribution(filters: AnalyticsFilters): Promise<Distribution
 }
 
 export function getStoresTable(filters: AnalyticsFilters): Promise<StoresTableResponse> {
-  return apiPost<StoresTableResponse, AnalyticsFilters>("/api/analytics/stores-table", filters);
+  return apiPost<StoresTableResponse, AnalyticsFilters>("/api/analytics/monitoring-windows", filters);
+}
+
+export function getDataSources(): Promise<DataSourcesResponse> {
+  return apiGet<DataSourcesResponse>("/api/data/sources");
 }
 
 export function getAvailabilitySummary(): Promise<AvailabilitySummary> {

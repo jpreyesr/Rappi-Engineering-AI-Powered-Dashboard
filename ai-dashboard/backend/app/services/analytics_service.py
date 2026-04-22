@@ -4,10 +4,16 @@ from app.schemas.analytics import (
     AvailabilitySummary,
     AvailabilityTrendResponse,
     DatasetMetadata,
+    DeltaTrendPoint,
+    DeltaTrendResponse,
     DistributionBucket,
     DistributionResponse,
     FilterOptionsResponse,
+    HeatmapCell,
+    HourlyHeatmapResponse,
     Kpi,
+    PeriodComparisonPoint,
+    PeriodComparisonResponse,
     StoresTableResponse,
     StoresTableRow,
     TimeSeriesPoint,
@@ -29,7 +35,7 @@ class AnalyticsService:
             max_timestamp=options["max_timestamp"],
             metrics=options["metrics"],
             source_files=options["source_files"],
-            granularities=["raw", "hour", "day"],
+            granularities=["raw", "10s", "1min", "5min", "15min", "1h", "hour", "day"],
         )
 
     def get_kpis(self, filters: AnalyticsFilters | None = None) -> AnalyticsKpisResponse:
@@ -62,6 +68,27 @@ class AnalyticsService:
         result = self.repository.stores_table(filters)
         rows = [StoresTableRow(**row) for row in result["rows"]]
         return StoresTableResponse(total=result["total"], limit=filters.limit, offset=filters.offset, rows=rows)
+
+    def get_monitoring_windows(self, filters: AnalyticsFilters | None = None) -> StoresTableResponse:
+        return self.get_stores_table(filters)
+
+    def get_delta_trend(self, filters: AnalyticsFilters | None = None) -> DeltaTrendResponse:
+        filters = self._normalize_filters(filters, default_limit=500)
+        points = [DeltaTrendPoint(**point) for point in self.repository.delta_trend(filters)]
+        return DeltaTrendResponse(granularity=filters.granularity, anomaly_drop_pct=filters.anomaly_drop_pct, points=points)
+
+    def get_hourly_heatmap(self, filters: AnalyticsFilters | None = None) -> HourlyHeatmapResponse:
+        filters = self._normalize_filters(filters)
+        result = self.repository.hourly_heatmap(filters)
+        return HourlyHeatmapResponse(
+            days_count=result["days_count"],
+            cells=[HeatmapCell(**cell) for cell in result["cells"]],
+        )
+
+    def get_period_comparison(self, filters: AnalyticsFilters | None = None) -> PeriodComparisonResponse:
+        filters = self._normalize_filters(filters, default_limit=500)
+        points = [PeriodComparisonPoint(**point) for point in self.repository.period_comparison(filters)]
+        return PeriodComparisonResponse(granularity=filters.granularity, points=points)
 
     def get_summary(self, filters: AnalyticsFilters | None = None) -> AvailabilitySummary:
         filters = self._normalize_filters(filters)
@@ -123,6 +150,11 @@ class AnalyticsService:
             "min_visible_stores": kpis.min_visible_stores,
             "max_visible_stores": kpis.max_visible_stores,
             "volatility_visible_stores": kpis.volatility_visible_stores,
+            "p50_visible_stores": kpis.p50_visible_stores,
+            "p95_visible_stores": kpis.p95_visible_stores,
+            "p99_visible_stores": kpis.p99_visible_stores,
+            "dominant_behavior": kpis.dominant_behavior,
+            "recommended_y_scale": kpis.recommended_y_scale,
             "points_count": kpis.points_count,
             "latest_timestamp": kpis.max_timestamp.isoformat() if kpis.max_timestamp else None,
             "files_count": metadata.files_count,

@@ -2,6 +2,10 @@
 
 Aplicación web local para analizar datos históricos de disponibilidad de tiendas y hacer preguntas en lenguaje natural sobre la misma capa analítica que usa el dashboard.
 
+El dataset principal corresponde a exportaciones wide de monitoreo sintético: cada CSV trae una fila con la métrica
+`synthetic_monitoring_visible_stores` y muchas columnas de timestamps con granularidad nativa cercana a 10 segundos. El backend
+transpone esas columnas a una serie temporal normalizada antes de calcular KPIs, tendencias, distribución, anomalías y ventanas de monitoreo.
+
 ## Stack
 
 - Frontend: React, TypeScript, Vite, Tailwind CSS, Recharts
@@ -71,12 +75,17 @@ Endpoints principales:
 - `GET /health`
 - `POST /api/data/load`
 - `GET /api/data/status`
+- `GET /api/data/sources`
 - `GET /api/filters`
 - `POST /api/analytics/kpis`
 - `POST /api/analytics/availability-trend`
+- `POST /api/analytics/delta-trend`
 - `POST /api/analytics/top-unstable-stores`
 - `POST /api/analytics/distribution`
 - `POST /api/analytics/stores-table`
+- `POST /api/analytics/hourly-heatmap`
+- `POST /api/analytics/period-comparison`
+- `POST /api/analytics/monitoring-windows`
 - `POST /api/chat`
 - `GET /api/chat/suggestions`
 
@@ -100,6 +109,7 @@ La ingesta crea o reemplaza estas tablas en DuckDB:
 - `availability_enriched`
 - `load_metadata`
 - `ingestion_file_reports`
+- `monitoring_windows`
 
 ## Configuración Del Frontend
 
@@ -127,13 +137,15 @@ VITE_API_BASE_URL=http://localhost:8000
 1. Inicia el backend.
 2. Carga los datos con `POST /api/data/load`.
 3. Inicia el frontend.
-4. Usa los filtros para elegir rango de fechas, métrica, ventana fuente y granularidad.
-5. Revisa KPIs, tendencia, ranking de inestabilidad, distribución y tabla.
+4. Usa los filtros para elegir rango de fechas, métrica, ventanas fuente, granularidad, rango horario, umbral y escala Y.
+5. Revisa KPIs, tendencia de línea/área, delta, distribución, heatmap, comparación de períodos y tabla de ventanas.
 6. Haz preguntas en el chat. El chat llama tools del backend y usa el mismo servicio analítico que el dashboard.
 
 ## Nota Sobre El Dataset
 
-Los CSVs actuales contienen series agregadas de disponibilidad, no registros individuales por tienda. Por eso la UI muestra las entidades de ranking y tabla como ventanas fuente.
+Los CSVs actuales contienen series agregadas de disponibilidad, no registros individuales por tienda. Por eso la UI muestra las entidades de ranking y tabla como ventanas de monitoreo.
+
+Algunos archivos pueden tener valores en órdenes de magnitud muy distintos. El dashboard permite escala lineal, automática o logarítmica para que sea posible comparar ramp-ups pequeños con ventanas en millones sin que la línea quede aplastada.
 
 Los endpoints del backend todavía incluyen `stores` en algunos nombres porque son contratos estables para soportar datos futuros con granularidad real por tienda.
 

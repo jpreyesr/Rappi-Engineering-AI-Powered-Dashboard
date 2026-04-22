@@ -31,15 +31,15 @@ export function UnstableRankingChart({ unstable, isLoading }: UnstableRankingCha
         <div>
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-700" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-neutral-950">Most Unstable Sources</h2>
+            <h2 className="text-lg font-semibold text-neutral-950">Ventanas más inestables</h2>
           </div>
-          <p className="mt-1 text-sm text-neutral-500">Ranked by backend volatility across source windows.</p>
+          <p className="mt-1 text-sm text-neutral-500">Ranking backend por volatilidad de cada ventana fuente.</p>
         </div>
       </div>
 
       {isLoading && data.length === 0 ? <LoadingBlock className="h-[320px]" /> : null}
       {!isLoading && data.length === 0 ? (
-        <EmptyState title="No ranking data" description="No source windows matched the selected filters." />
+        <EmptyState title="Sin ranking" description="Ninguna ventana coincide con los filtros activos." />
       ) : null}
       {data.length > 0 ? (
         <div className="h-[320px]">

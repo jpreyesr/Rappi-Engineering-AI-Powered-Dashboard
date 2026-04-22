@@ -20,14 +20,14 @@ type StoresTableProps = {
 };
 
 const columns: Array<{ key: StoresTableSortBy; label: string; align?: "right" }> = [
-  { key: "entity_label", label: "Source window" },
+  { key: "entity_label", label: "Ventana" },
   { key: "avg_visible_stores", label: "Avg", align: "right" },
   { key: "min_visible_stores", label: "Min", align: "right" },
   { key: "max_visible_stores", label: "Max", align: "right" },
   { key: "stddev_visible_stores", label: "Volatility", align: "right" },
-  { key: "points_count", label: "Points", align: "right" },
-  { key: "min_timestamp", label: "Start" },
-  { key: "max_timestamp", label: "End" },
+  { key: "points_count", label: "Puntos", align: "right" },
+  { key: "min_timestamp", label: "Inicio" },
+  { key: "max_timestamp", label: "Fin" },
 ];
 
 export function StoresTable({ table, tableState, isLoading, onPageChange, onSortChange }: StoresTableProps) {
@@ -39,8 +39,8 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
     <article className="rounded-md border border-neutral-200 bg-white shadow-sm">
       <div className="flex flex-col gap-2 border-b border-neutral-200 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-neutral-950">Source Windows Table</h2>
-          <p className="mt-1 text-sm text-neutral-500">Paginated backend rows by source window.</p>
+          <h2 className="text-lg font-semibold text-neutral-950">Ventanas de monitoreo</h2>
+          <p className="mt-1 text-sm text-neutral-500">Estadísticas por archivo fuente, calculadas en backend.</p>
         </div>
         <p className="text-sm text-neutral-500">{formatNumber(total)} rows</p>
       </div>
@@ -48,7 +48,7 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
       {isLoading && rows.length === 0 ? <div className="p-4"><LoadingBlock className="h-72" /></div> : null}
       {!isLoading && rows.length === 0 ? (
         <div className="p-4">
-          <EmptyState title="No table rows" description="Try clearing filters or choosing a wider date range." />
+        <EmptyState title="Sin ventanas" description="Limpia filtros o elige un rango más amplio." />
         </div>
       ) : null}
       {rows.length > 0 ? (
@@ -79,6 +79,7 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
                       </button>
                     </th>
                   ))}
+                  <th className="px-4 py-3">Comportamiento</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
@@ -94,6 +95,7 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
                     <td className="px-4 py-3 text-right text-neutral-700">{formatNumber(row.points_count)}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-neutral-700">{formatDateTime(row.min_timestamp)}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-neutral-700">{formatDateTime(row.max_timestamp)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-neutral-700">{formatBehavior(row.behavior)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -105,21 +107,21 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
               onClick={() => onPageChange(tableState.page - 1)}
               disabled={tableState.page === 0 || isLoading}
               className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
-              title="Previous page"
-              aria-label="Previous page"
+              title="Página anterior"
+              aria-label="Página anterior"
             >
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             </button>
             <p className="text-sm text-neutral-600">
-              Page {tableState.page + 1} of {pageCount}
+              Página {tableState.page + 1} de {pageCount}
             </p>
             <button
               type="button"
               onClick={() => onPageChange(tableState.page + 1)}
               disabled={tableState.page + 1 >= pageCount || isLoading}
               className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-neutral-300 text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
-              title="Next page"
-              aria-label="Next page"
+              title="Página siguiente"
+              aria-label="Página siguiente"
             >
               <ChevronRight className="h-4 w-4" aria-hidden="true" />
             </button>
@@ -128,4 +130,11 @@ export function StoresTable({ table, tableState, isLoading, onPageChange, onSort
       ) : null}
     </article>
   );
+}
+
+function formatBehavior(value?: string | null): string {
+  if (!value) {
+    return "-";
+  }
+  return value.replace("ramp_up", "ramp-up").replace("stable", "estable").replace("decreasing", "caída").replace("oscillating", "oscilante");
 }

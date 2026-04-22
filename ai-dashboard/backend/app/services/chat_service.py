@@ -80,11 +80,11 @@ class ChatService:
     def suggestions(self) -> ChatSuggestionsResponse:
         return ChatSuggestionsResponse(
             suggestions=[
-                "What are the current visible stores and latest delta?",
-                "Which source windows are the most unstable?",
-                "How has availability changed over the selected period?",
-                "What does the distribution of visible stores look like?",
-                "Show me the top rows in the source windows table.",
+                "¿A qué hora hubo más tiendas visibles en el período seleccionado?",
+                "¿Cuánto tiempo estuvo la disponibilidad por debajo del umbral?",
+                "¿Hubo caídas bruscas durante la tarde?",
+                "¿Cuál fue el promedio de tiendas visibles entre estas horas?",
+                "¿Alguna ventana parece un ramp-up del sistema?",
             ]
         )
 
@@ -125,6 +125,18 @@ class ChatService:
         if name == "get_distribution":
             filters.bucket_count = self._bounded_int(arguments.get("bucket_count"), default=20, minimum=2, maximum=50)
             return self.analytics_service.get_distribution(filters).model_dump(mode="json")
+        if name == "get_delta_trend":
+            filters.granularity = arguments.get("granularity") or filters.granularity
+            filters.limit = self._bounded_int(arguments.get("limit"), default=240, minimum=1, maximum=1000)
+            return self.analytics_service.get_delta_trend(filters).model_dump(mode="json")
+        if name == "get_hourly_heatmap":
+            return self.analytics_service.get_hourly_heatmap(filters).model_dump(mode="json")
+        if name == "get_period_comparison":
+            filters.limit = self._bounded_int(arguments.get("limit"), default=500, minimum=1, maximum=1000)
+            return self.analytics_service.get_period_comparison(filters).model_dump(mode="json")
+        if name == "get_monitoring_windows":
+            filters.limit = self._bounded_int(arguments.get("limit"), default=20, minimum=1, maximum=100)
+            return self.analytics_service.get_monitoring_windows(filters).model_dump(mode="json")
         if name == "get_stores_table":
             pagination = arguments.get("pagination") if isinstance(arguments.get("pagination"), dict) else {}
             sorting = arguments.get("sorting") if isinstance(arguments.get("sorting"), dict) else {}
@@ -139,8 +151,9 @@ class ChatService:
             options = self.analytics_service.get_filter_options()
             return {
                 "tables": ["availability_points", "availability_enriched", "load_metadata"],
-                "grain": "availability_points is one row per timestamp, metric, and source window.",
-                "store_grain_note": "The current dataset has no individual store dimension; source_file is used as a source-window proxy.",
+                "grain": "CSV files are wide monitoring exports. Backend ingestion transposes timestamp columns into one row per timestamp, metric, and monitoring window.",
+                "native_granularity": "10 seconds",
+                "store_grain_note": "The current dataset has no individual store_id dimension; source_file is a monitoring-window proxy, not an individual store.",
                 "metrics": options.metrics,
                 "granularities": options.granularities,
                 "min_timestamp": options.min_timestamp.isoformat() if options.min_timestamp else None,
@@ -151,7 +164,25 @@ class ChatService:
     def _merge_filters(self, base: AnalyticsFilters, raw_filters: Any) -> AnalyticsFilters:
         data = base.model_dump()
         if isinstance(raw_filters, dict):
-            for key in ["start", "end", "metric", "source_file", "granularity", "limit", "offset", "sort_by", "sort_direction", "bucket_count"]:
+            for key in [
+                "start",
+                "end",
+                "metric",
+                "source_file",
+                "source_files",
+                "granularity",
+                "hour_from",
+                "hour_to",
+                "threshold_min",
+                "compare_previous",
+                "anomaly_drop_pct",
+                "y_scale",
+                "limit",
+                "offset",
+                "sort_by",
+                "sort_direction",
+                "bucket_count",
+            ]:
                 if raw_filters.get(key) is not None:
                     data[key] = raw_filters[key]
         return AnalyticsFilters(**data)
@@ -164,7 +195,9 @@ class ChatService:
                     "You are a semantic analytics assistant for an AI-Powered Dashboard. "
                     "You must use tools for factual answers. Do not invent figures. "
                     "The frontend never calls OpenAI; all tools run in the backend. "
-                    "Important: the current dataset does not include individual stores; source_file/source windows are used as the proxy for store-like ranking/table endpoints."
+                    "The metric synthetic_monitoring_visible_stores is a synthetic monitoring time series of visible stores. "
+                    "CSV timestamp columns are observations at native 10-second granularity. "
+                    "Important: the current dataset does not include individual stores; source_file/source windows are monitoring windows, not stores."
                 ),
             },
             {
@@ -183,6 +216,11 @@ class ChatService:
                 "end": {"type": "string", "description": "ISO datetime"},
                 "metric": {"type": "string"},
                 "source_file": {"type": "string"},
+                "source_files": {"type": "array", "items": {"type": "string"}},
+                "hour_from": {"type": "integer", "minimum": 0, "maximum": 23},
+                "hour_to": {"type": "integer", "minimum": 0, "maximum": 23},
+                "threshold_min": {"type": "number"},
+                "anomaly_drop_pct": {"type": "number"},
             },
             "additionalProperties": False,
         }
@@ -193,9 +231,24 @@ class ChatService:
                 "Get official availability trend points.",
                 {
                     "filters": filter_schema,
-                    "granularity": {"type": "string", "enum": ["raw", "hour", "day"]},
+                    "granularity": {"type": "string", "enum": ["raw", "10s", "1min", "5min", "15min", "1h", "hour", "day"]},
                     "limit": {"type": "integer", "minimum": 1, "maximum": 500},
                 },
+            ),
+            self._tool(
+                "get_delta_trend",
+                "Get official delta points and anomaly flags for visible stores.",
+                {
+                    "filters": filter_schema,
+                    "granularity": {"type": "string", "enum": ["raw", "10s", "1min", "5min", "15min", "1h", "hour", "day"]},
+                    "limit": {"type": "integer", "minimum": 1, "maximum": 1000},
+                },
+            ),
+            self._tool("get_hourly_heatmap", "Get official hourly/day pattern cells.", {"filters": filter_schema}),
+            self._tool(
+                "get_period_comparison",
+                "Compare current selected period against the immediately previous period.",
+                {"filters": filter_schema, "limit": {"type": "integer", "minimum": 1, "maximum": 1000}},
             ),
             self._tool(
                 "get_top_unstable_stores",
@@ -244,6 +297,11 @@ class ChatService:
                         "additionalProperties": False,
                     },
                 },
+            ),
+            self._tool(
+                "get_monitoring_windows",
+                "Get monitoring-window metadata, behavior classification, and statistics by source file.",
+                {"filters": filter_schema, "limit": {"type": "integer", "minimum": 1, "maximum": 100}},
             ),
             self._tool("describe_schema", "Describe available analytical schema, grain, and limitations.", {}),
         ]

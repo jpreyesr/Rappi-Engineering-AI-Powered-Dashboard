@@ -3,8 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import {
   getAnalyticsKpis,
   getAvailabilityTrend,
+  getDataSources,
+  getDeltaTrend,
   getDistribution,
   getFilterOptions,
+  getHourlyHeatmap,
+  getPeriodComparison,
   getStoresTable,
   getTopUnstableStores,
 } from "../../../services/analytics";
@@ -12,9 +16,13 @@ import type {
   AnalyticsFilters,
   AnalyticsKpisResponse,
   AvailabilityTrendResponse,
+  DataSourcesResponse,
+  DeltaTrendResponse,
   DistributionResponse,
   FilterOptionsResponse,
   Granularity,
+  HourlyHeatmapResponse,
+  PeriodComparisonResponse,
   StoresTableResponse,
   StoresTableSortBy,
   TopUnstableStoresResponse,
@@ -24,8 +32,14 @@ type DashboardFilterState = {
   startDate: string;
   endDate: string;
   metric: string;
-  sourceFile: string;
+  sourceFiles: string[];
   granularity: Granularity;
+  hourFrom: string;
+  hourTo: string;
+  thresholdMin: string;
+  comparePrevious: boolean;
+  anomalyDropPct: string;
+  yScale: "auto" | "linear" | "log";
 };
 
 type TableState = {
@@ -39,8 +53,14 @@ const DEFAULT_FILTERS: DashboardFilterState = {
   startDate: "",
   endDate: "",
   metric: "",
-  sourceFile: "",
-  granularity: "hour",
+  sourceFiles: [],
+  granularity: "1h",
+  hourFrom: "",
+  hourTo: "",
+  thresholdMin: "",
+  comparePrevious: false,
+  anomalyDropPct: "5",
+  yScale: "auto",
 };
 
 const DEFAULT_TABLE: TableState = {
@@ -56,9 +76,13 @@ export function useDashboardData() {
   const [tableState, setTableState] = useState<TableState>(DEFAULT_TABLE);
   const [kpis, setKpis] = useState<AnalyticsKpisResponse | null>(null);
   const [trend, setTrend] = useState<AvailabilityTrendResponse | null>(null);
+  const [deltaTrend, setDeltaTrend] = useState<DeltaTrendResponse | null>(null);
   const [unstable, setUnstable] = useState<TopUnstableStoresResponse | null>(null);
   const [distribution, setDistribution] = useState<DistributionResponse | null>(null);
+  const [heatmap, setHeatmap] = useState<HourlyHeatmapResponse | null>(null);
+  const [comparison, setComparison] = useState<PeriodComparisonResponse | null>(null);
   const [storesTable, setStoresTable] = useState<StoresTableResponse | null>(null);
+  const [sources, setSources] = useState<DataSourcesResponse | null>(null);
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,18 +131,36 @@ export function useDashboardData() {
           sort_by: tableState.sortBy,
           sort_direction: tableState.sortDirection,
         });
-        const [kpisResponse, trendResponse, unstableResponse, distributionResponse, tableResponse] = await Promise.all([
+        const [
+          kpisResponse,
+          trendResponse,
+          deltaResponse,
+          unstableResponse,
+          distributionResponse,
+          heatmapResponse,
+          comparisonResponse,
+          tableResponse,
+          sourcesResponse,
+        ] = await Promise.all([
           getAnalyticsKpis(analyticsFilters),
           getAvailabilityTrend(analyticsFilters),
+          getDeltaTrend(analyticsFilters),
           getTopUnstableStores({ ...analyticsFilters, limit: 8 }),
           getDistribution({ ...analyticsFilters, bucket_count: 12 }),
+          getHourlyHeatmap(analyticsFilters),
+          getPeriodComparison({ ...analyticsFilters, compare_previous: true }),
           getStoresTable(tableFilters),
+          getDataSources(),
         ]);
         setKpis(kpisResponse);
         setTrend(trendResponse);
+        setDeltaTrend(deltaResponse);
         setUnstable(unstableResponse);
         setDistribution(distributionResponse);
+        setHeatmap(heatmapResponse);
+        setComparison(comparisonResponse);
         setStoresTable(tableResponse);
+        setSources(sourcesResponse);
       } catch (caught) {
         setError(caught instanceof Error ? caught.message : "Unable to load dashboard data.");
       } finally {
@@ -164,9 +206,13 @@ export function useDashboardData() {
     tableState,
     kpis,
     trend,
+    deltaTrend,
     unstable,
     distribution,
+    heatmap,
+    comparison,
     storesTable,
+    sources,
     isLoading: isLoadingOptions || isLoadingData,
     isLoadingOptions,
     isLoadingData,
@@ -186,8 +232,15 @@ function buildAnalyticsFilters(
     start: filters.startDate ? `${filters.startDate}T00:00:00` : null,
     end: filters.endDate ? `${filters.endDate}T23:59:59` : null,
     metric: filters.metric || null,
-    source_file: filters.sourceFile || null,
+    source_file: filters.sourceFiles.length === 1 ? filters.sourceFiles[0] : null,
+    source_files: filters.sourceFiles,
     granularity: filters.granularity,
+    hour_from: filters.hourFrom ? Number(filters.hourFrom) : null,
+    hour_to: filters.hourTo ? Number(filters.hourTo) : null,
+    threshold_min: filters.thresholdMin ? Number(filters.thresholdMin) : null,
+    compare_previous: filters.comparePrevious,
+    anomaly_drop_pct: filters.anomalyDropPct ? Number(filters.anomalyDropPct) : 5,
+    y_scale: filters.yScale,
     ...overrides,
   };
 }

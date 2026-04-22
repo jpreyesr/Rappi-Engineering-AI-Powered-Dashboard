@@ -30,10 +30,14 @@ export type TimeSeriesPoint = {
   timestamp: string;
   visible_stores: number;
   delta_visible_stores?: number | null;
+  p50_visible_stores?: number | null;
+  p95_visible_stores?: number | null;
+  p99_visible_stores?: number | null;
+  is_anomaly?: boolean;
 };
 
 export type TimeSeriesResponse = {
-  granularity: "raw" | "hour" | "day";
+  granularity: Granularity;
   points: TimeSeriesPoint[];
 };
 
@@ -58,7 +62,8 @@ export type ChatSuggestionsResponse = {
   suggestions: string[];
 };
 
-export type Granularity = "raw" | "hour" | "day";
+export type Granularity = "raw" | "10s" | "1min" | "5min" | "15min" | "1h" | "hour" | "day";
+export type YScale = "auto" | "linear" | "log";
 
 export type SortDirection = "asc" | "desc";
 
@@ -78,7 +83,14 @@ export type AnalyticsFilters = {
   end?: string | null;
   metric?: string | null;
   source_file?: string | null;
+  source_files?: string[];
   granularity?: Granularity;
+  hour_from?: number | null;
+  hour_to?: number | null;
+  threshold_min?: number | null;
+  compare_previous?: boolean;
+  anomaly_drop_pct?: number;
+  y_scale?: YScale;
   limit?: number;
   offset?: number;
   sort_by?: StoresTableSortBy;
@@ -98,10 +110,21 @@ export type AnalyticsKpisResponse = {
   current_visible_stores: number | null;
   previous_visible_stores: number | null;
   delta_visible_stores: number | null;
+  first_visible_stores: number | null;
+  last_visible_stores: number | null;
+  absolute_change_visible_stores: number | null;
+  percent_change_visible_stores: number | null;
   average_visible_stores: number | null;
   min_visible_stores: number | null;
   max_visible_stores: number | null;
   volatility_visible_stores: number | null;
+  p50_visible_stores: number | null;
+  p95_visible_stores: number | null;
+  p99_visible_stores: number | null;
+  below_threshold_count: number;
+  below_threshold_seconds: number | null;
+  dominant_behavior: string | null;
+  recommended_y_scale: string;
   points_count: number;
   min_timestamp: string | null;
   max_timestamp: string | null;
@@ -139,6 +162,7 @@ export type DistributionBucket = {
   bucket_end: number;
   count: number;
   percentage: number;
+  contains_latest?: boolean;
 };
 
 export type DistributionResponse = {
@@ -159,6 +183,9 @@ export type StoresTableRow = {
   points_count: number;
   min_timestamp: string | null;
   max_timestamp: string | null;
+  first_visible_stores?: number | null;
+  last_visible_stores?: number | null;
+  behavior?: string | null;
 };
 
 export type StoresTableResponse = {
@@ -166,4 +193,63 @@ export type StoresTableResponse = {
   limit: number;
   offset: number;
   rows: StoresTableRow[];
+};
+
+export type DeltaTrendPoint = {
+  timestamp: string;
+  visible_stores: number;
+  previous_visible_stores: number | null;
+  delta_visible_stores: number | null;
+  delta_percent: number | null;
+  is_anomaly: boolean;
+};
+
+export type DeltaTrendResponse = {
+  granularity: Granularity;
+  anomaly_drop_pct: number;
+  points: DeltaTrendPoint[];
+};
+
+export type HeatmapCell = {
+  date: string;
+  hour_of_day: number;
+  avg_visible_stores: number | null;
+  points_count: number;
+};
+
+export type HourlyHeatmapResponse = {
+  cells: HeatmapCell[];
+  days_count: number;
+};
+
+export type PeriodComparisonPoint = {
+  period_label: string;
+  offset_seconds: number;
+  timestamp: string;
+  visible_stores: number;
+};
+
+export type PeriodComparisonResponse = {
+  granularity: Granularity;
+  points: PeriodComparisonPoint[];
+};
+
+export type MonitoringSource = {
+  source_file: string;
+  metric: string | null;
+  min_timestamp: string | null;
+  max_timestamp: string | null;
+  points_count: number;
+  first_visible_stores: number | null;
+  last_visible_stores: number | null;
+  min_visible_stores: number | null;
+  max_visible_stores: number | null;
+  avg_visible_stores: number | null;
+  stddev_visible_stores: number | null;
+  behavior: string;
+};
+
+export type DataSourcesResponse = {
+  total: number;
+  sources: MonitoringSource[];
 };

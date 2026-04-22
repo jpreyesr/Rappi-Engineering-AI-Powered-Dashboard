@@ -7,8 +7,11 @@ from app.schemas.analytics import (
     AnalyticsKpisResponse,
     AvailabilitySummary,
     AvailabilityTrendResponse,
+    DeltaTrendResponse,
     DistributionResponse,
     FilterOptionsResponse,
+    HourlyHeatmapResponse,
+    PeriodComparisonResponse,
     StoresTableResponse,
     TimeSeriesResponse,
     TopUnstableStoresResponse,
@@ -62,6 +65,38 @@ def get_stores_table(
     service: AnalyticsService = Depends(get_analytics_service),
 ) -> StoresTableResponse:
     return service.get_stores_table(filters)
+
+
+@router.post("/api/analytics/delta-trend", response_model=DeltaTrendResponse)
+def get_delta_trend(
+    filters: AnalyticsFilters = Body(default_factory=AnalyticsFilters),
+    service: AnalyticsService = Depends(get_analytics_service),
+) -> DeltaTrendResponse:
+    return service.get_delta_trend(filters)
+
+
+@router.post("/api/analytics/hourly-heatmap", response_model=HourlyHeatmapResponse)
+def get_hourly_heatmap(
+    filters: AnalyticsFilters = Body(default_factory=AnalyticsFilters),
+    service: AnalyticsService = Depends(get_analytics_service),
+) -> HourlyHeatmapResponse:
+    return service.get_hourly_heatmap(filters)
+
+
+@router.post("/api/analytics/period-comparison", response_model=PeriodComparisonResponse)
+def get_period_comparison(
+    filters: AnalyticsFilters = Body(default_factory=AnalyticsFilters),
+    service: AnalyticsService = Depends(get_analytics_service),
+) -> PeriodComparisonResponse:
+    return service.get_period_comparison(filters)
+
+
+@router.post("/api/analytics/monitoring-windows", response_model=StoresTableResponse)
+def get_monitoring_windows(
+    filters: AnalyticsFilters = Body(default_factory=AnalyticsFilters),
+    service: AnalyticsService = Depends(get_analytics_service),
+) -> StoresTableResponse:
+    return service.get_monitoring_windows(filters)
 
 
 @router.get("/analytics/summary", response_model=AvailabilitySummary)

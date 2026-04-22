@@ -50,3 +50,23 @@ class DataStatusResponse(BaseModel):
     last_loaded_at: datetime | None = None
     errors: list[str] = Field(default_factory=list)
     recent_files: list[IngestionFileReport] = Field(default_factory=list)
+
+
+class MonitoringSource(BaseModel):
+    source_file: str
+    metric: str | None = None
+    min_timestamp: datetime | None = None
+    max_timestamp: datetime | None = None
+    points_count: int = 0
+    first_visible_stores: float | None = None
+    last_visible_stores: float | None = None
+    min_visible_stores: float | None = None
+    max_visible_stores: float | None = None
+    avg_visible_stores: float | None = None
+    stddev_visible_stores: float | None = None
+    behavior: str = "unknown"
+
+
+class DataSourcesResponse(BaseModel):
+    total: int
+    sources: list[MonitoringSource] = Field(default_factory=list)

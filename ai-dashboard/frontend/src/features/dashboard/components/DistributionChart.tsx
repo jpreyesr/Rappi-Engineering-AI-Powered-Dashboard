@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -28,16 +29,16 @@ export function DistributionChart({ distribution, isLoading }: DistributionChart
   return (
     <article className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
       <div className="mb-4 flex items-center gap-2">
-        <BarChart3 className="h-5 w-5 text-blue-700" aria-hidden="true" />
+            <BarChart3 className="h-5 w-5 text-blue-700" aria-hidden="true" />
         <div>
-          <h2 className="text-lg font-semibold text-neutral-950">Availability Distribution</h2>
-          <p className="mt-1 text-sm text-neutral-500">Backend buckets by visible store count.</p>
+          <h2 className="text-lg font-semibold text-neutral-950">Distribución de disponibilidad</h2>
+          <p className="mt-1 text-sm text-neutral-500">Buckets backend por conteo de tiendas visibles.</p>
         </div>
       </div>
 
       {isLoading && data.length === 0 ? <LoadingBlock className="h-[320px]" /> : null}
       {!isLoading && data.length === 0 ? (
-        <EmptyState title="No distribution data" description="No points matched the selected filters." />
+        <EmptyState title="Sin distribución" description="Ningún punto coincide con los filtros activos." />
       ) : null}
       {data.length > 0 ? (
         <div className="h-[320px]">
@@ -52,7 +53,11 @@ export function DistributionChart({ distribution, isLoading }: DistributionChart
                   return [`${formatNumber(Number(value))} (${formatPercent(payload?.percentage ?? null)})`, "Points"];
                 }}
               />
-              <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                {distribution?.buckets.map((bucket) => (
+                  <Cell key={bucket.bucket_index} fill={bucket.contains_latest ? "#059669" : "#2563eb"} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -48,3 +48,16 @@ export function formatPercent(value: number | null): string {
   }
   return `${value.toFixed(1)}%`;
 }
+
+export function formatDuration(seconds: number | null): string {
+  if (seconds === null || seconds === undefined || Number.isNaN(seconds)) {
+    return "-";
+  }
+  if (seconds < 60) {
+    return `${Math.round(seconds)}s`;
+  }
+  if (seconds < 3600) {
+    return `${Math.round(seconds / 60)}min`;
+  }
+  return `${(seconds / 3600).toFixed(1)}h`;
+}

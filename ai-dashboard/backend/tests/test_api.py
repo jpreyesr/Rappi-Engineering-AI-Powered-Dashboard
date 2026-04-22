@@ -120,4 +120,4 @@ def test_chat_uses_analytics_fallback_without_openai_key() -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["used_ai"] is False
-    assert payload["tool_calls"][0]["name"] == "get_availability_summary"
+    assert payload["tool_calls"][0]["name"] == "get_kpis"

@@ -1,8 +1,9 @@
 import { LineChart } from "lucide-react";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart as RechartsLineChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -17,10 +18,13 @@ import { EmptyState, LoadingBlock } from "./StateBlocks";
 type TrendChartProps = {
   trend: AvailabilityTrendResponse | null;
   isLoading: boolean;
+  yScale: "auto" | "linear" | "log";
+  recommendedYScale?: string;
 };
 
-export function TrendChart({ trend, isLoading }: TrendChartProps) {
+export function TrendChart({ trend, isLoading, yScale, recommendedYScale }: TrendChartProps) {
   const chartData = toAvailabilityChartData(trend?.points ?? []);
+  const effectiveScale = yScale === "auto" ? recommendedYScale ?? "linear" : yScale;
 
   return (
     <article className="rounded-md border border-neutral-200 bg-white p-4 shadow-sm">
@@ -28,9 +32,11 @@ export function TrendChart({ trend, isLoading }: TrendChartProps) {
         <div>
           <div className="flex items-center gap-2">
             <LineChart className="h-5 w-5 text-emerald-700" aria-hidden="true" />
-            <h2 className="text-lg font-semibold text-neutral-950">Availability Trend</h2>
+            <h2 className="text-lg font-semibold text-neutral-950">Tiendas visibles en el tiempo</h2>
           </div>
-          <p className="mt-1 text-sm text-neutral-500">Backend aggregate by {trend?.granularity ?? "hour"}</p>
+          <p className="mt-1 text-sm text-neutral-500">
+            Agregado backend por {trend?.granularity ?? "1h"} · escala {effectiveScale === "log" ? "logarítmica" : "lineal"}
+          </p>
         </div>
         <p className="text-sm text-neutral-500">
           {chartData.length > 0
@@ -41,15 +47,21 @@ export function TrendChart({ trend, isLoading }: TrendChartProps) {
 
       {isLoading && chartData.length === 0 ? <LoadingBlock className="h-[380px]" /> : null}
       {!isLoading && chartData.length === 0 ? (
-        <EmptyState title="No trend data" description="Try widening the date range or clearing the source filter." />
+        <EmptyState title="Sin tendencia" description="Amplía el rango o limpia el filtro de ventana." />
       ) : null}
       {chartData.length > 0 ? (
         <div className="h-[380px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <RechartsLineChart data={chartData} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
               <CartesianGrid stroke="#e5e7eb" strokeDasharray="4 4" />
               <XAxis dataKey="label" minTickGap={28} tick={{ fontSize: 12, fill: "#525252" }} />
-              <YAxis tickFormatter={formatCompactNumber} width={72} tick={{ fontSize: 12, fill: "#525252" }} />
+              <YAxis
+                tickFormatter={formatCompactNumber}
+                width={72}
+                tick={{ fontSize: 12, fill: "#525252" }}
+                scale={effectiveScale === "log" ? "log" : "auto"}
+                domain={effectiveScale === "log" ? ["auto", "auto"] : undefined}
+              />
               <Tooltip
                 formatter={(value: unknown, name: unknown) => [
                   formatNumber(Number(value)),
@@ -57,22 +69,19 @@ export function TrendChart({ trend, isLoading }: TrendChartProps) {
                 ]}
                 labelClassName="text-sm font-medium text-neutral-700"
               />
-              <Line
+              {chartData[0]?.p50VisibleStores ? <ReferenceLine y={chartData[0].p50VisibleStores} stroke="#64748b" strokeDasharray="4 4" /> : null}
+              {chartData[0]?.p95VisibleStores ? <ReferenceLine y={chartData[0].p95VisibleStores} stroke="#7c3aed" strokeDasharray="4 4" /> : null}
+              <Area
                 type="monotone"
                 dataKey="visibleStores"
                 stroke="#047857"
+                fill="#a7f3d0"
+                fillOpacity={0.45}
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4 }}
               />
-              <Line
-                type="monotone"
-                dataKey="deltaVisibleStores"
-                stroke="#2563eb"
-                strokeWidth={1.5}
-                dot={false}
-              />
-            </RechartsLineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       ) : null}

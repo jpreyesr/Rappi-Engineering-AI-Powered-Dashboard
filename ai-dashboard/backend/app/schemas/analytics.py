@@ -37,6 +37,10 @@ class TimeSeriesPoint(BaseModel):
     timestamp: datetime
     visible_stores: float
     delta_visible_stores: float | None = None
+    p50_visible_stores: float | None = None
+    p95_visible_stores: float | None = None
+    p99_visible_stores: float | None = None
+    is_anomaly: bool = False
 
 
 class TimeSeriesResponse(BaseModel):
@@ -56,10 +60,21 @@ class AnalyticsKpisResponse(BaseModel):
     current_visible_stores: float | None
     previous_visible_stores: float | None
     delta_visible_stores: float | None
+    first_visible_stores: float | None = None
+    last_visible_stores: float | None = None
+    absolute_change_visible_stores: float | None = None
+    percent_change_visible_stores: float | None = None
     average_visible_stores: float | None
     min_visible_stores: float | None
     max_visible_stores: float | None
     volatility_visible_stores: float | None
+    p50_visible_stores: float | None = None
+    p95_visible_stores: float | None = None
+    p99_visible_stores: float | None = None
+    below_threshold_count: int = 0
+    below_threshold_seconds: float | None = None
+    dominant_behavior: str | None = None
+    recommended_y_scale: str = "linear"
     points_count: int
     min_timestamp: datetime | None
     max_timestamp: datetime | None
@@ -97,6 +112,7 @@ class DistributionBucket(BaseModel):
     bucket_end: float
     count: int
     percentage: float
+    contains_latest: bool = False
 
 
 class DistributionResponse(BaseModel):
@@ -117,6 +133,9 @@ class StoresTableRow(BaseModel):
     points_count: int
     min_timestamp: datetime | None
     max_timestamp: datetime | None
+    first_visible_stores: float | None = None
+    last_visible_stores: float | None = None
+    behavior: str | None = None
 
 
 class StoresTableResponse(BaseModel):
@@ -124,3 +143,42 @@ class StoresTableResponse(BaseModel):
     limit: int
     offset: int
     rows: list[StoresTableRow]
+
+
+class DeltaTrendPoint(BaseModel):
+    timestamp: datetime
+    visible_stores: float
+    previous_visible_stores: float | None = None
+    delta_visible_stores: float | None = None
+    delta_percent: float | None = None
+    is_anomaly: bool = False
+
+
+class DeltaTrendResponse(BaseModel):
+    granularity: Granularity
+    anomaly_drop_pct: float
+    points: list[DeltaTrendPoint]
+
+
+class HeatmapCell(BaseModel):
+    date: str
+    hour_of_day: int
+    avg_visible_stores: float | None
+    points_count: int
+
+
+class HourlyHeatmapResponse(BaseModel):
+    cells: list[HeatmapCell]
+    days_count: int
+
+
+class PeriodComparisonPoint(BaseModel):
+    period_label: str
+    offset_seconds: int
+    timestamp: datetime
+    visible_stores: float
+
+
+class PeriodComparisonResponse(BaseModel):
+    granularity: Granularity
+    points: list[PeriodComparisonPoint]

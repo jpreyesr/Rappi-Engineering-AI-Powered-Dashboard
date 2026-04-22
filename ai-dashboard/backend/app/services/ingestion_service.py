@@ -16,9 +16,10 @@ from app.core.constants import (
     AVAILABILITY_POINTS_TABLE,
     INGESTION_FILE_REPORTS_TABLE,
     LOAD_METADATA_TABLE,
+    MONITORING_WINDOWS_TABLE,
 )
 from app.db.duckdb_client import DuckDBClient
-from app.schemas.data import DataLoadResponse, DataStatusResponse, IngestionFileReport
+from app.schemas.data import DataLoadResponse, DataSourcesResponse, DataStatusResponse, IngestionFileReport, MonitoringSource
 
 
 class IngestionError(Exception):
@@ -64,7 +65,7 @@ class IngestionService:
             errors = ["No analytical availability points were produced from valid CSV files."]
             raise IngestionError(errors[0], reports=reports)
 
-        clean_points_loaded = len({(timestamp, metric) for timestamp, metric, _, _ in availability_points})
+        clean_points_loaded = len({(timestamp, metric, source_file) for timestamp, metric, _, source_file in availability_points})
         tables_created = self._replace_analytics_tables(availability_points, reports, raw_tables)
         loaded_reports = [report for report in reports if report.status in {"loaded", "loaded_raw"}]
         skipped_reports = [report for report in reports if report.status not in {"loaded", "loaded_raw"}]
@@ -126,6 +127,66 @@ class IngestionService:
             errors=self._split_errors(errors),
             recent_files=recent_files,
         )
+
+    def sources(self) -> DataSourcesResponse:
+        try:
+            with self.db.connect(read_only=True) as connection:
+                tables = {row[0] for row in connection.execute("show tables").fetchall()}
+                if MONITORING_WINDOWS_TABLE not in tables:
+                    return DataSourcesResponse(total=0, sources=[])
+                rows = connection.execute(
+                    f"""
+                    select
+                        source_file,
+                        metric,
+                        min_timestamp,
+                        max_timestamp,
+                        points_count,
+                        first_visible_stores,
+                        last_visible_stores,
+                        min_visible_stores,
+                        max_visible_stores,
+                        avg_visible_stores,
+                        stddev_visible_stores,
+                        behavior
+                    from {MONITORING_WINDOWS_TABLE}
+                    order by min_timestamp, source_file
+                    """
+                ).fetchall()
+        except FileNotFoundError:
+            return DataSourcesResponse(total=0, sources=[])
+
+        sources = [
+            MonitoringSource(
+                source_file=source_file,
+                metric=metric,
+                min_timestamp=min_timestamp,
+                max_timestamp=max_timestamp,
+                points_count=points_count or 0,
+                first_visible_stores=first_visible_stores,
+                last_visible_stores=last_visible_stores,
+                min_visible_stores=min_visible_stores,
+                max_visible_stores=max_visible_stores,
+                avg_visible_stores=avg_visible_stores,
+                stddev_visible_stores=stddev_visible_stores,
+                behavior=behavior or "unknown",
+            )
+            for (
+                source_file,
+                metric,
+                min_timestamp,
+                max_timestamp,
+                points_count,
+                first_visible_stores,
+                last_visible_stores,
+                min_visible_stores,
+                max_visible_stores,
+                avg_visible_stores,
+                stddev_visible_stores,
+                behavior,
+            ) in rows
+        ]
+        return DataSourcesResponse(total=len(sources), sources=sources)
 
     def _discover_sources(self) -> tuple[list[Path], int, Path]:
         self.extracted_dir.mkdir(parents=True, exist_ok=True)
@@ -261,6 +322,7 @@ class IngestionService:
             AVAILABILITY_ENRICHED_TABLE,
             LOAD_METADATA_TABLE,
             INGESTION_FILE_REPORTS_TABLE,
+            MONITORING_WINDOWS_TABLE,
             *sorted(raw_tables),
         ]
 
@@ -294,10 +356,10 @@ class IngestionService:
                         timestamp,
                         metric,
                         avg(visible_stores) as visible_stores,
-                        min(source_file) as source_file
+                        source_file
                     from availability_points_staging
-                    group by timestamp, metric
-                    order by timestamp, metric
+                    group by timestamp, metric, source_file
+                    order by timestamp, metric, source_file
                     """
                 )
                 connection.execute(
@@ -319,6 +381,38 @@ class IngestionService:
                         extract('hour' from timestamp) as hour_of_day,
                         strftime(timestamp, '%A') as day_of_week
                     from {AVAILABILITY_POINTS_TABLE}
+                    """
+                )
+                connection.execute(
+                    f"""
+                    create or replace table {MONITORING_WINDOWS_TABLE} as
+                    with stats as (
+                        select
+                            source_file,
+                            metric,
+                            min(timestamp) as min_timestamp,
+                            max(timestamp) as max_timestamp,
+                            count(*) as points_count,
+                            arg_min(visible_stores, timestamp) as first_visible_stores,
+                            arg_max(visible_stores, timestamp) as last_visible_stores,
+                            min(visible_stores) as min_visible_stores,
+                            max(visible_stores) as max_visible_stores,
+                            avg(visible_stores) as avg_visible_stores,
+                            stddev_samp(visible_stores) as stddev_visible_stores
+                        from {AVAILABILITY_POINTS_TABLE}
+                        group by source_file, metric
+                    )
+                    select
+                        *,
+                        case
+                            when points_count < 2 then 'stable'
+                            when first_visible_stores <= nullif(max_visible_stores, 0) * 0.25
+                                and last_visible_stores > first_visible_stores * 1.5 then 'ramp_up'
+                            when last_visible_stores < first_visible_stores * 0.95 then 'decreasing'
+                            when coalesce(stddev_visible_stores, 0) > nullif(avg_visible_stores, 0) * 0.05 then 'oscillating'
+                            else 'stable'
+                        end as behavior
+                    from stats
                     """
                 )
                 min_timestamp, max_timestamp = connection.execute(
@@ -363,6 +457,7 @@ class IngestionService:
     def _create_core_tables(self, connection: DuckDBPyConnection) -> None:
         self._drop_relation(connection, AVAILABILITY_POINTS_TABLE)
         self._drop_relation(connection, AVAILABILITY_ENRICHED_TABLE)
+        self._drop_relation(connection, MONITORING_WINDOWS_TABLE)
         self._drop_relation(connection, LOAD_METADATA_TABLE)
         self._drop_relation(connection, INGESTION_FILE_REPORTS_TABLE)
         connection.execute(

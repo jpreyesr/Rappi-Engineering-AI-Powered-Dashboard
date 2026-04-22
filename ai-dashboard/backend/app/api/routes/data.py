@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.deps import get_ingestion_service
-from app.schemas.data import DataLoadResponse, DataStatusResponse
+from app.schemas.data import DataLoadResponse, DataSourcesResponse, DataStatusResponse
 from app.services.ingestion_service import IngestionError, IngestionService
 
 router = APIRouter(prefix="/api/data", tags=["data"])
@@ -24,3 +24,8 @@ def load_data(service: IngestionService = Depends(get_ingestion_service)) -> Dat
 @router.get("/status", response_model=DataStatusResponse)
 def data_status(service: IngestionService = Depends(get_ingestion_service)) -> DataStatusResponse:
     return service.status()
+
+
+@router.get("/sources", response_model=DataSourcesResponse)
+def data_sources(service: IngestionService = Depends(get_ingestion_service)) -> DataSourcesResponse:
+    return service.sources()
